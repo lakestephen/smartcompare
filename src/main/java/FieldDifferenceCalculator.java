@@ -641,12 +641,12 @@ public class FieldDifferenceCalculator {
     public static interface Field {
 
         /**
-         * @return class type for this field (values returned may be subclasses)
+         * @return class type for this field, which may be a superclass of the actual instance data
          */
         Class<?> getType();
 
         /**
-         * @return value for this field, which should be the class given by getType() or a subclass, or null
+         * @return value for this field, which should be the class given by getType(), a subclass of getType() or null
          */
         Object getValue(Object o) throws Exception;
 
