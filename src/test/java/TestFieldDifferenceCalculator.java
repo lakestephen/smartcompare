@@ -17,35 +17,24 @@ public class TestFieldDifferenceCalculator extends TestCase {
     public Object t1;
     public Object t2;
 
-    public FieldDifferenceCalculator fieldDifferenceCalculator;
-    public FieldDifferenceCalculator beanIntrospectingDifferenceCalculator;
-    public FieldDifferenceCalculator mapIntrospectingDifferenceCalculator;
-    public FieldDifferenceCalculator superclassFieldDifferenceCalculator;
-
-    public void setUp() {
-        fieldDifferenceCalculator = new FieldDifferenceCalculator();
-
-        beanIntrospectingDifferenceCalculator = new FieldDifferenceCalculator(
-            new BeanFieldIntrospectingConfig()
-        );
-
-        mapIntrospectingDifferenceCalculator = new FieldDifferenceCalculator(
-            new MapIntrospectingConfig()
-        );
-    }
+    private final BeanFieldIntrospectingConfig beanInstrospectingConfig = new BeanFieldIntrospectingConfig();
+    private final MapIntrospectingConfig mapIntrospectingConfig = new MapIntrospectingConfig();
+    private final FieldDifferenceCalculator.DefaultConfig defaultConfig = new FieldDifferenceCalculator.DefaultConfig();
+    private final SubclassIntrospectingConfig subclassConfig = new SubclassIntrospectingConfig();
+    private final SuperclassIntrospectingConfig superclassConfig = new SuperclassIntrospectingConfig();
 
     public void testDefaultComparisonFields() {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(10d, "wibble");
 
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference("stringField", "object1:[test] object2:[wibble]", "test", "wibble")
         );
 
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(5d, "wibble");
-        introspect();
+        introspect(defaultConfig);
 
         checkDifferences(
             newDifference("doubleField", "object1:[10.0] object2:[5.0]", 10d, 5d),
@@ -58,7 +47,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(10d, "wibble");
 
-        introspect("description1", "description2");
+        introspect("description1", "description2", defaultConfig);
         checkDifferences(
             newDifference("stringField", "description1:[test] description2:[wibble]", "test", "wibble")
         );
@@ -67,7 +56,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
     public void testNullsAsPrimaryInputs() {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = null;
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "input object for comparison",
@@ -79,7 +68,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = null;
         t2 = new TestFieldDifferenceBean(10d, "test");
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "input object for comparison",
@@ -91,14 +80,14 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = null;
         t2 = null;
-        introspect();
+        introspect(defaultConfig);
         checkDifferences();
     }
 
     public void testNullFieldComparison() {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(10d, null);
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "stringField",
@@ -110,7 +99,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = new TestFieldDifferenceBean(10d, null);
         t2 = new TestFieldDifferenceBean(10d, "test");
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "stringField",
@@ -124,7 +113,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
     public void testClassDifferencesAsPrimaryInputs() {
         t1 = "wibble";
         t2 =  new TestFieldDifferenceBean(10d, "test");
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                     "input object for comparison",
@@ -140,7 +129,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test", child1);
         t2 = new TestFieldDifferenceBean(10d, "test", child2);
 
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         checkDifferences(
             newDifference(
                 "beanChild",
@@ -155,7 +144,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t2 = new TestFieldDifferenceBean(10d, "test", Color.BLACK);
 
         //by default Color is not a comparison field type, so there are no differences detected
-        introspect();
+        introspect(defaultConfig);
         checkDifferences();
 
         introspect(new FieldDifferenceCalculator.DefaultConfig() {
@@ -181,7 +170,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(9d, "test");
 
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "doubleField",
@@ -215,7 +204,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(9d, "test", child1);
         t2 = new TestFieldDifferenceBean(9d, "test", child2);
 
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         checkDifferences(
             newDifference(
                 "stringField",
@@ -228,7 +217,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = new TestFieldDifferenceBean(9d, "test", child1);
         t2 = new TestFieldDifferenceBean(9d, "test", child1);
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         checkDifferences();
     }
 
@@ -236,7 +225,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestBeanSubclass1(10d, "test", 10, new float[] {1f, 2f, 3f});
         t2 = new TestBeanSubclass1(10d, "test2", 100, new float[] {1f, 2f, 3f});
 
-        introspect();
+        introspect(defaultConfig);
         checkDifferences(
             newDifference(
                 "intField",
@@ -266,7 +255,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        introspect();
+        introspect(mapIntrospectingConfig);
         checkDifferences(
             newDifference(
                 "key1",
@@ -284,7 +273,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = new TestMapBean(map1);
         t2 = new TestMapBean(map2);
-        introspectTree();
+        introspect(mapIntrospectingConfig);
         checkDifferences(
                 newDifference(
                 "key1",
@@ -303,7 +292,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
 
         map2.remove("key3");
-        introspectTree();
+        introspect(mapIntrospectingConfig);
         checkDifferences(
                 newDifference(
                 "key1",
@@ -348,7 +337,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         checkDifferences(
             newDifference(
                 "key1",
@@ -375,7 +364,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         this.t1 = t1;
 
         t1.beanChild = t1;
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         //t1 has a reference back to itself, so differs from t2
         checkDifferences(
             newDifference(
@@ -389,28 +378,82 @@ public class TestFieldDifferenceCalculator extends TestCase {
         //both beans have references/cycles in the reference graph
         //so they are both the same, but we need to check this to make sure the maxDepth prevents infinite recursion
         t2.beanChild = t2;
-        introspectTree();
+        introspect(beanInstrospectingConfig);
         checkDifferences(
         );
     }
 
-    private void introspect() {
-        differences = fieldDifferenceCalculator.getDifferences(t1, t2);
+    public void testSubclassIntrospection() {
+        t1 = new TestBeanSubclass1(10d, "test", 100, null);
+        t2 = new TestBeanSubclass2(10d, "test2", 10, null);
+
+        introspect(subclassConfig);
+
+        //the int fields are on the subclass, so are considered different fields for analysis even though they have
+        //the same fieldName
+        checkDifferences(
+            newDifference(
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
+                "different class type: object1: [TestFieldDifferenceCalculator$TestBeanSubclass1] object2: [TestFieldDifferenceCalculator$TestBeanSubclass2]",
+                TestBeanSubclass1.class,
+                TestBeanSubclass2.class
+            ),
+            newDifference(
+                "stringField",
+                "object1:[test] object2:[test2]",
+                "test",
+                "test2"
+            ),
+            newDifference(
+                "intField",
+                "object1:[100] object2:[null]",
+                100,
+                null
+            ),
+            newDifference(
+                "intField",
+                "object1:[null] object2:[10]",
+                null,
+                10
+            )
+        );
     }
 
-    private void introspectTree() {
-        differences = beanIntrospectingDifferenceCalculator.getDifferences(t1, t2);
+    //this is the same as the subclass introspector, but we ignore all fields from subclasses for the comparison
+    //we only compare fields from the most specific shared superclass upwards
+    public void testSuperclassIntrospection() {
+        t1 = new TestBeanSubclass1(10d, "test", 100, null);
+        t2 = new TestBeanSubclass2(10d, "test2", 10, null);
+
+        introspect(superclassConfig);
+
+        //the int fields are on the subclass, so are considered different fields for analysis even though they have
+        //the same fieldName
+        checkDifferences(
+            newDifference(
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
+                "different class type: object1: [TestFieldDifferenceCalculator$TestBeanSubclass1] object2: [TestFieldDifferenceCalculator$TestBeanSubclass2]",
+                TestBeanSubclass1.class,
+                TestBeanSubclass2.class
+            ),
+            newDifference(
+                "stringField",
+                "object1:[test] object2:[test2]",
+                "test",
+                "test2"
+            )
+        );
     }
 
     private void introspect(FieldDifferenceCalculator.Config f) {
         differences = new FieldDifferenceCalculator(f).getDifferences(t1, t2);
-
     }
 
-    private void introspect(String object1Description, String object2Description) {
-        fieldDifferenceCalculator.setDescription1(object1Description);
-        fieldDifferenceCalculator.setDescription2(object2Description);
-        differences = fieldDifferenceCalculator.getDifferences(t1, t2);
+    private void introspect(String object1Description, String object2Description, FieldDifferenceCalculator.Config f) {
+        FieldDifferenceCalculator c = new FieldDifferenceCalculator(f);
+        c.setDescription1(object1Description);
+        c.setDescription2(object2Description);
+        differences = c.getDifferences(t1, t2);
     }
 
     private void checkDifferences(FieldDifferenceCalculator.Difference... diffs) {
@@ -529,6 +572,30 @@ public class TestFieldDifferenceCalculator extends TestCase {
             //only introspect top level fields by default, no drill down
             if (Map.class.isAssignableFrom(f.getType()) ) {
                 result = FieldDifferenceCalculator.ComparisonFieldType.INTROSPECTION_FIELD;
+            }
+            return result;
+        }
+    }
+
+    //config with an introspector which includes subclass fields
+    private static class SuperclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
+
+        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(Class commonSuperclass, Object o1, Object o2) {
+            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(commonSuperclass, o1, o2);
+            if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
+                result = new FieldDifferenceCalculator.SuperclassFieldIntrospector(commonSuperclass, o1, o2);
+            }
+            return result;
+        }
+    }
+
+    //config with an introspector which includes subclass fields
+    private static class SubclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
+
+        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(Class commonSuperclass, Object o1, Object o2) {
+            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(commonSuperclass, o1, o2);
+            if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
+                result = new FieldDifferenceCalculator.SubclassFieldIntrospector(commonSuperclass, o1, o2);
             }
             return result;
         }
