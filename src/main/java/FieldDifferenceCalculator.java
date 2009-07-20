@@ -259,7 +259,7 @@ public class FieldDifferenceCalculator {
      */
     private static class ClassUtils {
 
-        private static Class getCommonSuperclass(Class c1, Class c2) {
+        static Class getCommonSuperclass(Class c1, Class c2) {
             return getCommonSuperclass(c1, new Stack<Class>(), c2, new Stack<Class>());
         }
 
@@ -433,7 +433,7 @@ public class FieldDifferenceCalculator {
 
         public FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
-                return new MapIntrospector(pathFromRoot, o1, o2);
+                return new MapIntrospector(pathFromRoot, (Map)o1, (Map)o2);
             } else {
                 return new IdenticalClassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
             }
@@ -575,6 +575,68 @@ public class FieldDifferenceCalculator {
         }
     }
 
+    public static class IterableIntrospector extends AbstractFieldIntrospector {
+
+        private Iterable o1;
+        private Iterable o2;
+
+        public IterableIntrospector(List<String> pathFromRoot, Iterable o1, Iterable o2 ) {
+            super(pathFromRoot);
+            this.o1 = o1;
+            this.o2 = o2;
+        }
+
+        public List<Field> getFields() {
+            final List l1 = getList(o1);
+            final List l2 = getList(o2);
+
+            List<Field> result = new ArrayList<Field>();
+            int maxSize = Math.max(l1.size(), l2.size());
+            for (int loop=0; loop < maxSize; loop++) {
+                final int currentIndex = loop;
+                Field f = new Field() {
+
+                    public Class<?> getType() {
+                        return ClassUtils.getCommonSuperclass(
+                                getClassAt(l1, currentIndex),
+                                getClassAt(l2, currentIndex)
+                        );
+                    }
+
+                    private Class getClassAt(List l, int fieldIndex) {
+                        return ( l.size() > fieldIndex) ? l.get(fieldIndex).getClass() : null;
+                    }
+
+                    public Object getValue(Object o) throws Exception {
+                        return o == o1 ? getValueAt(l1, currentIndex) : getValueAt(l2, currentIndex);
+                    }
+
+                    private Object getValueAt(List l, int fieldIndex) {
+                        return ( l.size() > fieldIndex) ? l.get(fieldIndex) : null;
+                    }
+
+                    public String getName() {
+                        return String.valueOf(currentIndex);
+                    }
+
+                    public String getPath() {
+                        return IterableIntrospector.this.getPath(getName());
+                    }
+                };
+                result.add(f);
+            }
+            return result;
+        }
+
+        private List getList(Iterable i) {
+            List l = new ArrayList();
+            for ( Object o: i) {
+                l.add(o);
+            }
+            return l;
+        }
+    }
+
     /**
      * Map introspector
      */
@@ -585,10 +647,10 @@ public class FieldDifferenceCalculator {
         private Stack<Class> classStack1 = new Stack<Class>();
         private Stack<Class> classStack2 = new Stack<Class>();
 
-        public MapIntrospector(List<String> pathFromRoot, Object o1, Object o2) {
+        public MapIntrospector(List<String> pathFromRoot, Map o1, Map o2) {
             super(pathFromRoot);
-            this.o1 = (Map)o1;
-            this.o2 = (Map)o2;
+            this.o1 = o1;
+            this.o2 = o2;
         }
 
         public List<Field> getFields() {
