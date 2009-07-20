@@ -132,7 +132,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(beanInstrospectingConfig);
         checkDifferences(
             newClassDifference(
-                "beanChild",
+                "beanField",
                 "different class type: object1: [TestFieldDifferenceCalculator$TestFieldDifferenceBean] object2: [TestFieldDifferenceCalculator$TestBeanSubclass1]",
                 child1.getClass(),
                 child2.getClass())
@@ -211,7 +211,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
                 "object1:[test1] object2:[test2]",
                 "test1",
                 "test2",
-                "beanChild"
+                "beanField"
             )
         );
 
@@ -363,12 +363,12 @@ public class TestFieldDifferenceCalculator extends TestCase {
         this.t2 = t2;
         this.t1 = t1;
 
-        t1.beanChild = t1;
+        t1.beanField = t1;
         introspect(beanInstrospectingConfig);
         //t1 has a reference back to itself, so differs from t2
         checkDifferences(
             newValueDifference(
-                "beanChild",
+                "beanField",
                 "object1:[TestFieldDifferenceBean{doubleField=9.0, stringField='test', colorField=null}] object2:[null]",
                 t1,
                 null
@@ -377,7 +377,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         //both beans have references/cycles in the reference graph
         //so they are both the same, but we need to check this to make sure the maxDepth prevents infinite recursion
-        t2.beanChild = t2;
+        t2.beanField = t2;
         introspect(beanInstrospectingConfig);
         checkDifferences(
         );
@@ -445,6 +445,28 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
     }
 
+    public void testFieldPaths() {
+        t1 = new TestFieldDifferenceBean(10d, "test", new TestFieldDifferenceBean(20d, "test2"));
+        t2 = new TestFieldDifferenceBean(10d, "test", new TestFieldDifferenceBean(20d, "test2"));
+
+        final Set<String> expectedPaths = new HashSet<String>();
+        expectedPaths.add("doubleField");
+        expectedPaths.add("stringField");
+        expectedPaths.add("beanField");
+        expectedPaths.add("beanField.doubleField");
+        expectedPaths.add("beanField.stringField");
+        expectedPaths.add("beanField.beanField");
+
+        class FieldPathCheckingConfig extends BeanFieldIntrospectingConfig {
+            public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
+                expectedPaths.remove(f.getPath());
+                return super.getComparisonFieldType(f);
+            }
+        }
+        introspect(new FieldPathCheckingConfig());
+        assertEquals("paths correct", 0, expectedPaths.size());
+    }
+
     private void introspect(FieldDifferenceCalculator.Config f) {
         differences = new FieldDifferenceCalculator(f).getDifferences(t1, t2);
     }
@@ -483,7 +505,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         private double doubleField;
         private String stringField;
         private Color colorField;
-        protected TestFieldDifferenceBean beanChild;
+        protected TestFieldDifferenceBean beanField;
 
         public TestFieldDifferenceBean(double doubleField, String stringField) {
             this.doubleField = doubleField;
@@ -496,10 +518,10 @@ public class TestFieldDifferenceCalculator extends TestCase {
             this.colorField = colorField;
         }
 
-        public TestFieldDifferenceBean(double doubleField, String stringField, TestFieldDifferenceBean beanChild) {
+        public TestFieldDifferenceBean(double doubleField, String stringField, TestFieldDifferenceBean beanField) {
             this.doubleField = doubleField;
             this.stringField = stringField;
-            this.beanChild = beanChild;
+            this.beanField = beanField;
         }
 
         @Override

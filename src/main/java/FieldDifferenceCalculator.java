@@ -646,7 +646,7 @@ public class FieldDifferenceCalculator {
     public static interface Config {
 
         /**
-         * @return a type which indicates whether this field should be compared,
+         * @return a type which indicates whether the value of this field should be compared,
          * whether we should introspect it to drill down further, or ignore it
          */
         ComparisonFieldType getComparisonFieldType(Field f);
