@@ -18,7 +18,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
     public Object t2;
 
     private final BeanFieldIntrospectingConfig beanInstrospectingConfig = new BeanFieldIntrospectingConfig();
-    private final MapIntrospectingConfig mapIntrospectingConfig = new MapIntrospectingConfig();
+    private final CollectionIntrospectingConfig collectionIntrospectingConfig = new CollectionIntrospectingConfig();
     private final FieldDifferenceCalculator.DefaultConfig defaultConfig = new FieldDifferenceCalculator.DefaultConfig();
     private final SubclassIntrospectingConfig subclassConfig = new SubclassIntrospectingConfig();
     private final SuperclassIntrospectingConfig superclassConfig = new SuperclassIntrospectingConfig();
@@ -143,18 +143,18 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
         t2 = new TestFieldDifferenceBean(10d, "test", Color.BLACK);
 
-        //by default Color is not a comparison field type, so there are no differences detected
-        introspect(defaultConfig);
-        checkDifferences();
-
+        //this config suppresses comparison for Color fields so we should get no differences
         introspect(new FieldDifferenceCalculator.DefaultConfig() {
             public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
                 return f.getType() == Color.class ?
-                        FieldDifferenceCalculator.ComparisonFieldType.COMPARISON_FIELD :
+                        FieldDifferenceCalculator.ComparisonFieldType.IGNORE_FIELD :
                         super.getComparisonFieldType(f);
             }
 
         });
+        checkDifferences();
+
+        introspect(defaultConfig);
         //now the color difference should be detected
         checkDifferences(
             newValueDifference(
@@ -222,8 +222,8 @@ public class TestFieldDifferenceCalculator extends TestCase {
     }
 
     public void testSuperclassFieldDifference() {
-        t1 = new TestBeanSubclass1(10d, "test", 10, new float[] {1f, 2f, 3f});
-        t2 = new TestBeanSubclass1(10d, "test2", 100, new float[] {1f, 2f, 3f});
+        t1 = new TestBeanSubclass1(10d, "test", 10, null);
+        t2 = new TestBeanSubclass1(10d, "test2", 100, null);
 
         introspect(defaultConfig);
         checkDifferences(
@@ -255,7 +255,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        introspect(mapIntrospectingConfig);
+        introspect(collectionIntrospectingConfig);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -273,7 +273,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = new TestMapBean(map1);
         t2 = new TestMapBean(map2);
-        introspect(mapIntrospectingConfig);
+        introspect(collectionIntrospectingConfig);
         checkDifferences(
                 newValueDifference(
                 "key1",
@@ -292,7 +292,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
 
         map2.remove("key3");
-        introspect(mapIntrospectingConfig);
+        introspect(collectionIntrospectingConfig);
         checkDifferences(
                 newValueDifference(
                 "key1",
@@ -301,11 +301,11 @@ public class TestFieldDifferenceCalculator extends TestCase {
                 "wibble",
                 "mapField"
             ),
-            newValueDifference(
+            newFieldDifference(
                 "key3",
-                "object1:[test] object2:[null]",
+                "object1:[test] object2:[Undefined Field]",
                 "test",
-                null,
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
                 "mapField"
             )
         );
@@ -404,17 +404,29 @@ public class TestFieldDifferenceCalculator extends TestCase {
                 "test",
                 "test2"
             ),
-            newValueDifference(
+            newFieldDifference(
                 "intField",
-                "object1:[100] object2:[null]",
+                "object1:[100] object2:[Undefined Field]",
                 100,
-                null
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
             ),
-            newValueDifference(
-                "intField",
-                "object1:[null] object2:[10]",
+            newFieldDifference(
+                "floatField",
+                "object1:[null] object2:[Undefined Field]",
                 null,
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
+            ),
+            newFieldDifference(
+                "intField",
+                "object1:[Undefined Field] object2:[10]",
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
                 10
+            ),
+            newFieldDifference(
+                "listField",
+                "object1:[Undefined Field] object2:[null]",
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
+                null
             )
         );
     }
@@ -465,6 +477,34 @@ public class TestFieldDifferenceCalculator extends TestCase {
         }
         introspect(new FieldPathCheckingConfig());
         assertEquals("paths correct", 0, expectedPaths.size());
+    }
+
+    public void testIterableIntrospection() {
+        t1 = new TestIterableBean(Arrays.asList("item1", "item2", "item3", "item4"));
+        t2 = new TestIterableBean(Arrays.asList("item1", null, "wibble"));
+        introspect(collectionIntrospectingConfig);
+
+        checkDifferences(
+            newValueDifference(
+                "iterableField.1",
+                "object1:[item2] object2:[null]",
+                "item2",
+                null
+            ),
+            newValueDifference(
+                "iterableField.2",
+                "object1:[item3] object2:[wibble]",
+                "item3",
+                "wibble"
+            ),
+            newFieldDifference(
+                "iterableField.3",
+                "object1:[item4] object2:[Undefined Field]",
+                "item4",
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
+            )
+        );
+
     }
 
     private void introspect(FieldDifferenceCalculator.Config f) {
@@ -535,12 +575,20 @@ public class TestFieldDifferenceCalculator extends TestCase {
     }
 
     public static class TestMapBean {
+        private Map mapField;
 
         public TestMapBean(Map mapField) {
             this.mapField = mapField;
         }
 
-        private Map mapField;
+    }
+
+    public static class TestIterableBean {
+        private List<String> iterableField = new ArrayList<String>();
+
+        public TestIterableBean(List<String> iterableField) {
+            this.iterableField = iterableField;
+        }
     }
 
     public static class TestBeanSubclass1 extends TestFieldDifferenceBean {
@@ -576,6 +624,10 @@ public class TestFieldDifferenceCalculator extends TestCase {
         return new FieldDifferenceCalculator.Difference(FieldDifferenceCalculator.DifferenceType.VALUE, Arrays.asList(path), fieldName, description, fieldValue1, fieldValue2);
     }
 
+    private FieldDifferenceCalculator.Difference newFieldDifference(String fieldName, String description, Object fieldValue1, Object fieldValue2, String... path ) {
+        return new FieldDifferenceCalculator.Difference(FieldDifferenceCalculator.DifferenceType.FIELD, Arrays.asList(path), fieldName, description, fieldValue1, fieldValue2);
+    }
+
     private FieldDifferenceCalculator.Difference newClassDifference(String fieldName, String description, Object fieldValue1, Object fieldValue2, String... path ) {
         return new FieldDifferenceCalculator.Difference(FieldDifferenceCalculator.DifferenceType.CLASS, Arrays.asList(path), fieldName, description, fieldValue1, fieldValue2);
     }
@@ -592,11 +644,11 @@ public class TestFieldDifferenceCalculator extends TestCase {
         }
     }
 
-    private static class MapIntrospectingConfig extends BeanFieldIntrospectingConfig {
+    private static class CollectionIntrospectingConfig extends BeanFieldIntrospectingConfig {
         public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
             FieldDifferenceCalculator.ComparisonFieldType result = super.getComparisonFieldType(f);
             //only introspect top level fields by default, no drill down
-            if (Map.class.isAssignableFrom(f.getType()) ) {
+            if (Map.class.isAssignableFrom(f.getType()) || Iterable.class.isAssignableFrom(f.getType())) {
                 result = FieldDifferenceCalculator.ComparisonFieldType.INTROSPECTION_FIELD;
             }
             return result;

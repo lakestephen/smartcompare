@@ -159,17 +159,22 @@ public class FieldDifferenceCalculator {
 
                 if ( fieldValue1 != fieldValue2) {
                     //check to see if one of the fields is null
-                    Difference d = getNullDifference(f.getName(), fieldValue1, fieldValue2);
+                    Difference d = getUndefinedFieldDifference(f.getName(), fieldValue1, fieldValue2);
                     if ( d != null ) {
                         result.add(d);
                     } else {
-                        result.addAll(fieldDiffCalculator.getFieldDifferences(
-                            f, fieldValue1, fieldValue2)
-                        );
+                        d = getNullDifference(f.getName(), fieldValue1, fieldValue2);
+                        if ( d != null) {
+                            result.add(d);
+                        } else {
+                            result.addAll(fieldDiffCalculator.getFieldDifferences(
+                                f, fieldValue1, fieldValue2)
+                            );
+                        }
                     }
                 }
-            } catch (Exception e) {
-                result.add(new Difference(DifferenceType.ERROR, path, f.getName(), e.getClass().getName() + " - cannot determine equality", "Exception during comparison", "Exception during comparison"));
+            } catch (Throwable t) {
+                throw new FieldDiferenceCalculatorException(t);
             }
         }
         return result;
@@ -245,6 +250,16 @@ public class FieldDifferenceCalculator {
         boolean isNull2 = fieldValue2 == null;
         if ( isNull1 != isNull2 ) {
             d = createComparisonDifference(fieldName, fieldValue1, fieldValue2, false);
+        }
+        return d;
+    }
+
+    //one of the two comparison objects does not define a field which the other defines
+    //e.g. these are two different subclasses with differing fields at a subclass level
+    private Difference getUndefinedFieldDifference(String fieldName, Object fieldValue1, Object fieldValue2) {
+        Difference d = null;
+        if (fieldValue1 == FieldIntrospector.UNDEFINED_FIELD || fieldValue2 == FieldIntrospector.UNDEFINED_FIELD) {
+            d = new Difference(DifferenceType.FIELD, path, fieldName, description1 + ":[" + fieldValue1 + "] " + description2 + ":[" + fieldValue2 + "]", fieldValue1, fieldValue2);
         }
         return d;
     }
@@ -414,17 +429,16 @@ public class FieldDifferenceCalculator {
     }
 
     public static enum DifferenceType {
-        CLASS,
-        VALUE,
-        ERROR;
+        FIELD,  //a field exists for one object in the comparison but is not defined for the other
+        CLASS,  //the class of the object returned for a given field differs
+        VALUE   //the values for a field differ
     }
 
     public static class DefaultConfig implements Config {
 
         public ComparisonFieldType getComparisonFieldType(Field f) {
             //only introspect top level fields by default, no drill down
-            return f.getType().isPrimitive() || CharSequence.class.isAssignableFrom(f.getType()) ?
-                    ComparisonFieldType.COMPARISON_FIELD : ComparisonFieldType.IGNORE_FIELD;
+            return ComparisonFieldType.COMPARISON_FIELD;
         }
 
         public Comparator getComparator(Field f) {
@@ -434,6 +448,8 @@ public class FieldDifferenceCalculator {
         public FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
                 return new MapIntrospector(pathFromRoot, (Map)o1, (Map)o2);
+            } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
+                return new IterableIntrospector(pathFromRoot, (Iterable)o1, (Iterable)o2);
             } else {
                 return new IdenticalClassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
             }
@@ -535,7 +551,7 @@ public class FieldDifferenceCalculator {
                                 if ( ! f.isAccessible()) {
                                     f.setAccessible(true);
                                 }
-                                return f.getDeclaringClass().isAssignableFrom(o1.getClass()) ? f.get(o1) : null;
+                                return f.getDeclaringClass().isAssignableFrom(o1.getClass()) ? f.get(o1) : UNDEFINED_FIELD;
                             }
 
                             public String getName() {
@@ -598,13 +614,20 @@ public class FieldDifferenceCalculator {
 
                     public Class<?> getType() {
                         return ClassUtils.getCommonSuperclass(
-                                getClassAt(l1, currentIndex),
-                                getClassAt(l2, currentIndex)
+                            getClassAt(l1, currentIndex),
+                            getClassAt(l2, currentIndex)
                         );
                     }
 
                     private Class getClassAt(List l, int fieldIndex) {
-                        return ( l.size() > fieldIndex) ? l.get(fieldIndex).getClass() : null;
+                        Class result = null;
+                        if ( l.size() > fieldIndex) {
+                            Object o = l.get(fieldIndex);
+                            if ( o != null) {
+                                result = o.getClass();
+                            }
+                        }
+                        return result;
                     }
 
                     public Object getValue(Object o) throws Exception {
@@ -612,7 +635,7 @@ public class FieldDifferenceCalculator {
                     }
 
                     private Object getValueAt(List l, int fieldIndex) {
-                        return ( l.size() > fieldIndex) ? l.get(fieldIndex) : null;
+                        return ( l.size() > fieldIndex) ? l.get(fieldIndex) : UNDEFINED_FIELD;
                     }
 
                     public String getName() {
@@ -683,9 +706,9 @@ public class FieldDifferenceCalculator {
 
                     public Object getValue(Object o) throws Exception {
                         if ( o == o1) {
-                            return o1.get(key);
+                            return doGetValue(o1, key);
                         } else {
-                            return o2.get(key);
+                            return doGetValue(o2, key);
                         }
                     }
 
@@ -699,6 +722,10 @@ public class FieldDifferenceCalculator {
                 });
             }
             return fields;
+        }
+
+        private Object doGetValue(Map m, Object key) {
+            return m.containsKey(key) ? m.get(key) : UNDEFINED_FIELD;
         }
     }
 
@@ -741,6 +768,12 @@ public class FieldDifferenceCalculator {
      * in the map as field instances
      */
     public static interface FieldIntrospector {
+        //a value which should be returned if a field is undefined for a given object
+        Object UNDEFINED_FIELD = new Object() {
+            public String toString() {
+                return "Undefined Field";
+            }
+        };
 
         List<Field> getFields();
     }
@@ -778,4 +811,9 @@ public class FieldDifferenceCalculator {
         IGNORE_FIELD
     }
 
+    private class FieldDiferenceCalculatorException extends RuntimeException {
+        public FieldDiferenceCalculatorException(Throwable e) {
+            super(e);
+        }
+    }
 }
