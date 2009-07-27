@@ -9,10 +9,9 @@ import java.util.*;
  * A class which compares field values of two Objects to produce a list of differences.
  * It can also introspect several levels down the bean graph (until it reaches the level defined in maxDepth).
  *
- * The default config compares fields with primative types or which implement CharSequence (e.g. Strings)
- * at the top level only (no drill down into fields)
+ * The default config compares fields at the top level only (no drill down to introspect further down the object graph)
  *
- * To configure the calculator to introspect further down the bean graph you have to pass in a Config object,
+ * To configure the calculator to introspect further down the graph you have to pass in a Config object,
  * in which you can define:
  *
  * --> which fields to compare, and optionally a comparator to compare them
@@ -23,7 +22,7 @@ import java.util.*;
  *     These are drill down fields for the comparison, and the difference calculator will walk down the bean path
  *     for these fields.
  *
- * Any fields which are not 'introspection' fields or 'comparison' fields are simply ignored.
+ * Any fields which are not defined as 'introspection' fields or 'comparison' fields are simply ignored.
  *
  * It's also possible to configure how introspection is performed -->
  *
@@ -506,6 +505,8 @@ public class FieldDifferenceCalculator {
                 return new MapIntrospector(pathFromRoot, (Map)o1, (Map)o2);
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
                 return new IterableIntrospector(pathFromRoot, (Iterable)o1, (Iterable)o2);
+            } else if (commonSuperclass.isArray()) {
+                return new IterableIntrospector(pathFromRoot, (Object[])o1, (Object[])o2);
             } else {
                 return new IdenticalClassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
             }
@@ -647,10 +648,14 @@ public class FieldDifferenceCalculator {
 
     public static class IterableIntrospector extends AbstractFieldIntrospector {
 
-        private Iterable o1;
-        private Iterable o2;
+        private Object o1;
+        private Object o2;
 
-        public IterableIntrospector(List<String> pathFromRoot, Iterable o1, Iterable o2 ) {
+        /**
+         * @param o1, an Iterable instance or an array
+         * @param o2, an Iterable instance or an array
+         */
+        public IterableIntrospector(List<String> pathFromRoot, Object o1, Object o2 ) {
             super(pathFromRoot);
             this.o1 = o1;
             this.o2 = o2;
@@ -705,12 +710,35 @@ public class FieldDifferenceCalculator {
             return result;
         }
 
-        private List getList(Iterable i) {
-            List l = new ArrayList();
-            for ( Object o: i) {
-                l.add(o);
+        private List getList(Object i) {
+            if ( i instanceof Iterable) {
+                List l = new ArrayList();
+                for ( Object o: (Iterable)i) {
+                    l.add(o);
+                }
+                return l;
+            //I know this looks horrible, is there a better way?
+            //could use reflection to create a List but that would be slower.
+            } else if ( i instanceof Object[] ) {
+                return Arrays.asList((Object[])i);
+            } else if ( i instanceof int[] ) {
+                return Arrays.asList((int[])i);
+            } else if ( i instanceof float[] ) {
+                return Arrays.asList((float[])i);
+            } else if ( i instanceof byte[] ) {
+                return Arrays.asList((byte[])i);
+            } else if ( i instanceof char[] ) {
+                return Arrays.asList((char[])i);
+            } else if ( i instanceof double[] ) {
+                return Arrays.asList((double[])i);
+            } else if ( i instanceof short[] ) {
+                return Arrays.asList((short[])i);
+            } else if ( i instanceof long[] ) {
+                return Arrays.asList((long[])i);
+            } else if ( i instanceof boolean[] ) {
+                return Arrays.asList((boolean[])i);
             }
-            return l;
+            throw new UnsupportedOperationException("IterableIntrospector unsupported iterable type");
         }
     }
 
@@ -731,49 +759,56 @@ public class FieldDifferenceCalculator {
         }
 
         public List<Field> getFields() {
-            Set<Object> allKeys = new HashSet<Object>();
+            List<Object> allKeys = new ArrayList<Object>();
+            //we want to process fields for the superset of all keys in the maps but provide predictable ordering for
+            //SortedMap instances, otherwise testing is hard. We can't guarantee keys from both maps are comparable so
+            //can't sort the superset, but we can use a List to at least provide a predictable result
             allKeys.addAll(o1.keySet());
             allKeys.addAll(o2.keySet());
 
+            Set<Object> keysProcessed = new HashSet<Object>();
             List<Field> fields = new ArrayList<Field>();
             for ( final Object key : allKeys) {
-                fields.add(new Field() {
+                if ( ! keysProcessed.contains(key)) {
+                    fields.add(new Field() {
 
-                    public Class<?> getType() {
-                        return getCommonSuperclass(key);
-                    }
-
-                    private Class<?> getCommonSuperclass(Object key) {
-                        Class result;
-                        //this is a bit tricky because the values in the maps may have different class types
-                        //in which case we need to find and return the most specific common superclass.
-                        Class c1 = getClass(key, o1);
-                        Class c2 = getClass(key, o2);
-                        result = ClassUtils.getCommonSuperclass(c1, classStack1, c2, classStack2);
-                        return result;
-                    }
-
-                    private Class getClass(Object key, Map o1) {
-                        Object o = o1.get(key);
-                        return o == null ? null : o.getClass();
-                    }
-
-                    public Object getValue(Object o) throws Exception {
-                        if ( o == o1) {
-                            return doGetValue(o1, key);
-                        } else {
-                            return doGetValue(o2, key);
+                        public Class<?> getType() {
+                            return getCommonSuperclass(key);
                         }
-                    }
 
-                    public String getName() {
-                        return key.toString();
-                    }
+                        private Class<?> getCommonSuperclass(Object key) {
+                            Class result;
+                            //this is a bit tricky because the values in the maps may have different class types
+                            //in which case we need to find and return the most specific common superclass.
+                            Class c1 = getClass(key, o1);
+                            Class c2 = getClass(key, o2);
+                            result = ClassUtils.getCommonSuperclass(c1, classStack1, c2, classStack2);
+                            return result;
+                        }
 
-                    public String getPath() {
-                        return MapIntrospector.this.getPath(getName());
-                    }
-                });
+                        private Class getClass(Object key, Map o1) {
+                            Object o = o1.get(key);
+                            return o == null ? null : o.getClass();
+                        }
+
+                        public Object getValue(Object o) throws Exception {
+                            if ( o == o1) {
+                                return doGetValue(o1, key);
+                            } else {
+                                return doGetValue(o2, key);
+                            }
+                        }
+
+                        public String getName() {
+                            return key.toString();
+                        }
+
+                        public String getPath() {
+                            return MapIntrospector.this.getPath(getName());
+                        }
+                    });
+                }
+                keysProcessed.add(key);
             }
             return fields;
         }
