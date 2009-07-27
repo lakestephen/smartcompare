@@ -59,7 +59,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(defaultConfig);
         checkDifferences(
             newValueDifference(
-                "input object for comparison",
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
                 "object1:[TestFieldDifferenceBean{doubleField=10.0, stringField='test', colorField=null}] object2:[null]",
                 t1,
                 t2
@@ -71,7 +71,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(defaultConfig);
         checkDifferences(
             newValueDifference(
-                "input object for comparison",
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
                 "object1:[null] object2:[TestFieldDifferenceBean{doubleField=10.0, stringField='test', colorField=null}]",
                 t1,
                 t2
@@ -116,7 +116,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(defaultConfig);
         checkDifferences(
             newClassDifference(
-                "input object for comparison",
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
                 "different class type: object1: [java.lang.String] object2: [TestFieldDifferenceCalculator$TestFieldDifferenceBean]",
                 t1.getClass(),
                 t2.getClass())
@@ -243,8 +243,8 @@ public class TestFieldDifferenceCalculator extends TestCase {
     }
 
     public void testMapFieldDifference() {
-        HashMap<String, String> map1 = new HashMap<String,String>();
-        HashMap<String, String> map2 = new HashMap<String,String>();
+        Map<String, String> map1 = new TreeMap<String,String>();
+        Map<String, String> map2 = new TreeMap<String,String>();
 
         map1.put("key1", "test");
         map2.put("key1", "wibble");
@@ -258,13 +258,13 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(collectionIntrospectingConfig);
         checkDifferences(
             newValueDifference(
-                "key1",
+                "key3",
                 "object1:[test] object2:[wibble]",
                 "test",
                 "wibble"
             ),
             newValueDifference(
-                "key3",
+                "key1",
                 "object1:[test] object2:[wibble]",
                 "test",
                 "wibble"
@@ -276,14 +276,14 @@ public class TestFieldDifferenceCalculator extends TestCase {
         introspect(collectionIntrospectingConfig);
         checkDifferences(
                 newValueDifference(
-                "key1",
+                "key3",
                 "object1:[test] object2:[wibble]",
                 "test",
                 "wibble",
                 "mapField"
             ),
-            newValueDifference(
-                "key3",
+                newValueDifference(
+                "key1",
                 "object1:[test] object2:[wibble]",
                 "test",
                 "wibble",
@@ -294,18 +294,18 @@ public class TestFieldDifferenceCalculator extends TestCase {
         map2.remove("key3");
         introspect(collectionIntrospectingConfig);
         checkDifferences(
-                newValueDifference(
-                "key1",
-                "object1:[test] object2:[wibble]",
-                "test",
-                "wibble",
-                "mapField"
-            ),
             newFieldDifference(
                 "key3",
                 "object1:[test] object2:[Undefined Field]",
                 "test",
                 FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
+                "mapField"
+            ),
+            newValueDifference(
+                "key1",
+                "object1:[test] object2:[wibble]",
+                "test",
+                "wibble",
                 "mapField"
             )
         );
@@ -354,32 +354,6 @@ public class TestFieldDifferenceCalculator extends TestCase {
                 TestFieldDifferenceBean.class,
                 TestBeanSubclass1.class
             )
-        );
-    }
-
-    public void testGraphCycle() {       
-        TestFieldDifferenceBean t1 = new TestFieldDifferenceBean(9d, "test");
-        TestFieldDifferenceBean t2 = new TestFieldDifferenceBean(9d, "test");
-        this.t2 = t2;
-        this.t1 = t1;
-
-        t1.beanField = t1;
-        introspect(beanInstrospectingConfig);
-        //t1 has a reference back to itself, so differs from t2
-        checkDifferences(
-            newValueDifference(
-                "beanField",
-                "object1:[TestFieldDifferenceBean{doubleField=9.0, stringField='test', colorField=null}] object2:[null]",
-                t1,
-                null
-            )
-        );
-
-        //both beans have references/cycles in the reference graph
-        //so they are both the same, but we need to check this to make sure the maxDepth prevents infinite recursion
-        t2.beanField = t2;
-        introspect(beanInstrospectingConfig);
-        checkDifferences(
         );
     }
 
@@ -504,7 +478,53 @@ public class TestFieldDifferenceCalculator extends TestCase {
                 FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
             )
         );
+    }
 
+    public void testGraphCycle() {
+        TestFieldDifferenceBean t1 = new TestFieldDifferenceBean(9d, "test");
+        TestFieldDifferenceBean t2 = new TestFieldDifferenceBean(9d, "test");
+        this.t2 = t2;
+        this.t1 = t1;
+
+        t1.beanField = t1;
+        introspect(beanInstrospectingConfig);
+        //t1 has a reference back to itself, so differs from t2
+        checkDifferences(
+            newValueDifference(
+                "beanField",
+                "object1:[TestFieldDifferenceBean{doubleField=9.0, stringField='test', colorField=null}] object2:[null]",
+                t1,
+                null
+            )
+        );
+
+        //both beans have references/cycles in the reference graph
+        //so they are both the same, but we need to check this to make sure the maxDepth prevents infinite recursion
+        t2.beanField = t2;
+        introspect(beanInstrospectingConfig);
+        checkDifferences(
+        );
+    }
+
+    public void testGraphCycleDifferences() {
+        TestFieldDifferenceBean test1 = new TestFieldDifferenceBean(10d, "test");
+        TestFieldDifferenceBean test2 = new TestFieldDifferenceBean(10d, "test");
+        t1 = new TestFieldDifferenceBean(10d, "test", test1);
+        t2 = new TestFieldDifferenceBean(10d, "test", test2);
+        test1.beanField = (TestFieldDifferenceBean)t1;
+        test2.beanField = test2;
+
+        introspect(beanInstrospectingConfig);
+        //cycle back to the root for t1, back to beanField for t2
+        checkDifferences(
+            newCycleDifference(
+                FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
+                "object1:[] object2:[beanField]",
+                t1,
+                test2,
+                "beanField", "beanField"
+            )
+        );
     }
 
     private void introspect(FieldDifferenceCalculator.Config f) {
@@ -615,6 +635,9 @@ public class TestFieldDifferenceCalculator extends TestCase {
         }
     }
 
+    private FieldDifferenceCalculator.Difference newCycleDifference(String fieldName, String description, Object fieldValue1, Object fieldValue2, String... path) {
+        return new FieldDifferenceCalculator.Difference(FieldDifferenceCalculator.DifferenceType.CYCLE, Arrays.asList(path), fieldName, description, fieldValue1, fieldValue2);
+    }
 
     private FieldDifferenceCalculator.Difference newValueDifference(String fieldName, String description, Object fieldValue1, Object fieldValue2) {
         return new FieldDifferenceCalculator.Difference(FieldDifferenceCalculator.DifferenceType.VALUE, fieldName, description, fieldValue1, fieldValue2);

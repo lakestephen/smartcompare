@@ -41,15 +41,15 @@ import java.util.*;
  */
 public class FieldDifferenceCalculator {
 
-    public static final String INPUT_OBJECT_TEXT = "input object for comparison";
+    public static final String INPUT_OBJECT_TEXT = "";
 
     private static Config DEFAULT_FIELD_ANALYZER = new DefaultConfig();
-    private static final int DEFAULT_MAX_DEPTH = 3;
 
     private List<String> path;
     private volatile String description1;
     private volatile String description2;
-    private volatile int maxDepth;
+    private List<Object> visitedNodes1;
+    private List<Object> visitedNodes2;
     private Config fieldAnalyzer;
 
     public FieldDifferenceCalculator() {
@@ -61,19 +61,20 @@ public class FieldDifferenceCalculator {
     }
 
     public FieldDifferenceCalculator(String description1, String description2) {
-        this(description1, description2, DEFAULT_FIELD_ANALYZER, Collections.EMPTY_LIST, DEFAULT_MAX_DEPTH);
+        this(description1, description2, DEFAULT_FIELD_ANALYZER, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
     public FieldDifferenceCalculator(String description1, String description2, Config fieldAnalyzer) {
-        this(description1, description2, fieldAnalyzer, Collections.EMPTY_LIST, DEFAULT_MAX_DEPTH);
+        this(description1, description2, fieldAnalyzer, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
-    private FieldDifferenceCalculator(String description1, String description2, Config fieldAnalyzer, List<String> path, int maxDepth) {
+    private FieldDifferenceCalculator(String description1, String description2, Config fieldAnalyzer, List<String> path, List<Object> visitedNodes1, List<Object> visitedNodes2) {
         this.fieldAnalyzer = fieldAnalyzer;
         this.path = path;
         this.description1 = description1;
         this.description2 = description2;
-        this.maxDepth = maxDepth;
+        this.visitedNodes1 = visitedNodes1;
+        this.visitedNodes2 = visitedNodes2;
     }
 
     public void setDescription1(String description1) {
@@ -84,53 +85,79 @@ public class FieldDifferenceCalculator {
         this.description2 = description2;
     }
 
-    /**
-     * Set how far down the bean graph to introspect in the attempt to find differences
-     * It is important to set a sensible maximum here since otherwise any cycles in the reference graph may cause a stack overflow
-     */
-    public void setMaxDepth(int maxDepth) {
-        this.maxDepth = maxDepth;
-    }
-
     public synchronized List<Difference> getDifferences(Object o1, Object o2) {
-
         List<Difference> result = new ArrayList<Difference>();
         if ( o1 != null || o2 != null) {
-            Difference d = getNullDifference(INPUT_OBJECT_TEXT, o1, o2);
-            if ( d != null) {
-                result.add(d);
-            } else {
-                d = getClassDifference(o1, o2);
-                if ( d != null) {
-                    result.add(d);
-                } 
-                result.addAll(getFieldDifferences(o1, o2));
+            boolean nullDifference = addNullDifference(result, INPUT_OBJECT_TEXT, o1, o2);
+            if ( ! nullDifference ) {
+                boolean cycleExists = addCycleDifference(result, o1, o2);
+                if ( ! cycleExists ) {
+                    addClassDifference(result, o1, o2);
+                    addFieldDifferences(result, o1, o2);
+                }
             }
         }
         return result;
     }
 
-    private Difference getClassDifference(Object o1, Object o2) {
-        Difference result = null;
-        //if these are the original input object rather than a bean path further down we use a special description
-        String fieldName = path.size() == 0 ? INPUT_OBJECT_TEXT : "";
-        if (! o1.getClass().equals(o2.getClass())) {
-            result = new Difference(DifferenceType.CLASS, path, fieldName, "different class type: object1: [" + o1.getClass().getName() + "] object2: [" + o2.getClass().getName() + "]", o1.getClass(), o2.getClass());
+    private boolean addCycleDifference(List<Difference> differences, Object o1, Object o2) {
+        int cycle1PathIndex = getIndexByReferenceEquality(visitedNodes1, o1);
+        int cycle2PathIndex = getIndexByReferenceEquality(visitedNodes2, o2);
+        boolean cycleExists = false;
+        if ( cycle1PathIndex != -1 || cycle2PathIndex != -1 ) {
+            cycleExists = true;
+            //if the cycle points to the same index in the path for both objects we don't treat this as a difference.
+            //we just stop parsing so that we don't end up in an infinite loop
+            if ( cycle1PathIndex != cycle2PathIndex ) {
+                differences.add(
+                    new Difference(DifferenceType.CYCLE, path,
+                        INPUT_OBJECT_TEXT,
+                        getDifferenceDescription(
+                            ClassUtils.getPathAsString(path.subList(0, cycle1PathIndex)),
+                            ClassUtils.getPathAsString(path.subList(0, cycle2PathIndex))
+                        ),
+                        o1,
+                        o2
+                    )
+                );
+            }
+        }
+        return cycleExists;
+    }
+
+    private int getIndexByReferenceEquality(List<Object> visitedNodes, Object o) {
+        int result = -1;
+        int index = 0;
+        for ( Object node : visitedNodes ) {
+            if ( node == o) {
+                result = index;
+                break;
+            }
+            index++;
         }
         return result;
     }
 
-    private List<Difference> getFieldDifferences(Object o1, Object o2) {
 
+    private boolean addClassDifference(List<Difference> differences, Object o1, Object o2) {
+        boolean result = false;
+        //if these are the original input object rather than a bean path further down we use a special description
+        String fieldName = path.size() == 0 ? INPUT_OBJECT_TEXT : "";
+        if (! o1.getClass().equals(o2.getClass())) {
+            result = differences.add(new Difference(DifferenceType.CLASS, path, fieldName, "different class type: object1: [" + o1.getClass().getName() + "] object2: [" + o2.getClass().getName() + "]", o1.getClass(), o2.getClass()));
+        }
+        return result;
+    }
+
+    private boolean addFieldDifferences(List<Difference> differences, Object o1, Object o2) {
         List<Field> introspectionFields = new ArrayList<Field>();
         List<Field> comparisonFields = new ArrayList<Field>();
 
         Class clazz = ClassUtils.getCommonSuperclass(o1.getClass(), o2.getClass());
         addFields(clazz, o1, o2, introspectionFields, comparisonFields);
 
-        List<Difference> result = new ArrayList<Difference>();
-        result.addAll(getFieldDifferences(comparisonFields, new ComparisonFieldDiffCalculator(), o1, o2));
-        result.addAll(getFieldDifferences(introspectionFields, new IntrospectionFieldDifferenceCalculator(), o1, o2));
+        boolean result = differences.addAll(getFieldDifferences(comparisonFields, new ComparisonFieldDiffCalculator(), o1, o2));
+        result |= differences.addAll(getFieldDifferences(introspectionFields, new IntrospectionFieldDifferenceCalculator(o1, o2), o1, o2));
         return result;
     }
 
@@ -150,9 +177,10 @@ public class FieldDifferenceCalculator {
         }
     }
 
-    private List<Difference> getFieldDifferences(List<Field> comparisonField, FieldDiffCalculator fieldDiffCalculator, Object o1, Object o2) {
+    private List<Difference> getFieldDifferences(List<Field> fields, FieldDiffCalculator fieldDiffCalculator, Object o1, Object o2) {
         List<Difference> result = new ArrayList<Difference>();
-        for ( Field f : comparisonField) {
+
+        for ( Field f : fields) {
             try {
                 Object fieldValue1 = f.getValue(o1);
                 Object fieldValue2 = f.getValue(o2);
@@ -163,10 +191,8 @@ public class FieldDifferenceCalculator {
                     if ( d != null ) {
                         result.add(d);
                     } else {
-                        d = getNullDifference(f.getName(), fieldValue1, fieldValue2);
-                        if ( d != null) {
-                            result.add(d);
-                        } else {
+                        boolean nullDifference = addNullDifference(result, f.getName(), fieldValue1, fieldValue2);
+                        if ( ! nullDifference ){
                             result.addAll(fieldDiffCalculator.getFieldDifferences(
                                 f, fieldValue1, fieldValue2)
                             );
@@ -183,22 +209,35 @@ public class FieldDifferenceCalculator {
     //An introspection field, in which case we test for equality by reference, and if that
     //test fails we drill down to look for differences one further step down the object graph
     private class IntrospectionFieldDifferenceCalculator implements FieldDiffCalculator {
+        private List<Object> newVisitedNodes1;
+        private List<Object> newVisitedNodes2;
+
+        public IntrospectionFieldDifferenceCalculator(Object o1, Object o2) {
+            newVisitedNodes1 = getNewVisitedNodes(visitedNodes1, o1);
+            newVisitedNodes2 = getNewVisitedNodes(visitedNodes2, o2);
+        }
 
         public List<Difference> getFieldDifferences(Field f, Object fieldValue1, Object fieldValue2) {
             List<String> newPath = new ArrayList<String>(path);
             newPath.add(f.getName());
+
             List<Difference> result = new ArrayList<Difference>();
-            if ( newPath.size() <= maxDepth ) {
-                FieldDifferenceCalculator l = new FieldDifferenceCalculator(
-                        description1,
-                        description2,
-                        fieldAnalyzer,
-                        newPath,
-                        maxDepth
-                );
-                result.addAll(l.getDifferences(fieldValue1, fieldValue2));
-            }
+            FieldDifferenceCalculator l = new FieldDifferenceCalculator(
+                    description1,
+                    description2,
+                    fieldAnalyzer,
+                    newPath,
+                    newVisitedNodes1,
+                    newVisitedNodes2
+            );
+            result.addAll(l.getDifferences(fieldValue1, fieldValue2));
             return result;
+        }
+
+        private List<Object> getNewVisitedNodes(List<Object> visited, Object newNode) {
+            ArrayList<Object> o = new ArrayList<Object>(visited);
+            o.add(newNode);
+            return o;
         }
     }
 
@@ -239,19 +278,19 @@ public class FieldDifferenceCalculator {
     private Difference createComparisonDifference(String fieldName, Object fieldValue1, Object fieldValue2, boolean comparisonSucceeded) {
         Difference d = null;
         if (! comparisonSucceeded) {
-            d = new Difference(DifferenceType.VALUE, path, fieldName, description1 + ":[" + fieldValue1 + "] " + description2 + ":[" + fieldValue2 + "]", fieldValue1, fieldValue2);
+            d = new Difference(DifferenceType.VALUE, path, fieldName, getDifferenceDescription(fieldValue1, fieldValue2), fieldValue1, fieldValue2);
         }
         return d;
     }
 
-    private Difference getNullDifference(String fieldName, Object fieldValue1, Object fieldValue2) {
-        Difference d = null;
+    private boolean addNullDifference(List<Difference> differences, String fieldName, Object fieldValue1, Object fieldValue2) {
         boolean isNull1 = fieldValue1 == null;
         boolean isNull2 = fieldValue2 == null;
+        boolean result = false;
         if ( isNull1 != isNull2 ) {
-            d = createComparisonDifference(fieldName, fieldValue1, fieldValue2, false);
+            result = differences.add(createComparisonDifference(fieldName, fieldValue1, fieldValue2, false));
         }
-        return d;
+        return result;
     }
 
     //one of the two comparison objects does not define a field which the other defines
@@ -259,9 +298,13 @@ public class FieldDifferenceCalculator {
     private Difference getUndefinedFieldDifference(String fieldName, Object fieldValue1, Object fieldValue2) {
         Difference d = null;
         if (fieldValue1 == FieldIntrospector.UNDEFINED_FIELD || fieldValue2 == FieldIntrospector.UNDEFINED_FIELD) {
-            d = new Difference(DifferenceType.FIELD, path, fieldName, description1 + ":[" + fieldValue1 + "] " + description2 + ":[" + fieldValue2 + "]", fieldValue1, fieldValue2);
+            d = new Difference(DifferenceType.FIELD, path, fieldName, getDifferenceDescription(fieldValue1, fieldValue2), fieldValue1, fieldValue2);
         }
         return d;
+    }
+
+    private String getDifferenceDescription(Object differenceValue1, Object differenceValue2) {
+        return description1 + ":[" + differenceValue1 + "] " + description2 + ":[" + differenceValue2 + "]";
     }
 
     public boolean isSupportedForComparison(Field f) {
@@ -273,6 +316,18 @@ public class FieldDifferenceCalculator {
      * General util methods for parsing class information
      */
     private static class ClassUtils {
+
+        static String getPathAsString(List<String> pathFromRoot) {
+            Iterator<String> i = pathFromRoot.iterator();
+            StringBuilder sb = new StringBuilder();
+            while(i.hasNext()) {
+                sb.append(i.next());
+                if ( i.hasNext()) {
+                    sb.append(".");
+                }
+            }
+            return sb.toString();
+        }
 
         static Class getCommonSuperclass(Class c1, Class c2) {
             return getCommonSuperclass(c1, new Stack<Class>(), c2, new Stack<Class>());
@@ -429,6 +484,7 @@ public class FieldDifferenceCalculator {
     }
 
     public static enum DifferenceType {
+        CYCLE,  //when introspecting field values there are cyclic references which differ between the two objects
         FIELD,  //a field exists for one object in the comparison but is not defined for the other
         CLASS,  //the class of the object returned for a given field differs
         VALUE   //the values for a field differ
@@ -578,12 +634,10 @@ public class FieldDifferenceCalculator {
         private String introspectorPath;
 
         public AbstractFieldIntrospector(List<String> pathFromRoot) {
-            Iterator<String> i = pathFromRoot.iterator();
-            StringBuilder sb = new StringBuilder();
-            while(i.hasNext()) {
-                sb.append(i.next()).append(".");
+            this.introspectorPath = ClassUtils.getPathAsString(pathFromRoot);
+            if ( introspectorPath.length() > 0) {
+                introspectorPath = introspectorPath + ".";
             }
-            this.introspectorPath = sb.toString();
         }
 
         public String getPath(String fieldName) {
