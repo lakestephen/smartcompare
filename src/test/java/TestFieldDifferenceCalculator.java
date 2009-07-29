@@ -113,7 +113,14 @@ public class TestFieldDifferenceCalculator extends TestCase {
     public void testClassDifferencesAsPrimaryInputs() {
         t1 = "wibble";
         t2 =  new TestFieldDifferenceBean(10d, "test");
-        introspect(defaultConfig);
+
+        //introspect ignoring differences in class fields
+        introspect(new FieldDifferenceCalculator.DefaultConfig() {
+            public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+                return new FieldDifferenceCalculator.SuperclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
+            }
+        });
+
         checkDifferences(
             newClassDifference(
                 FieldDifferenceCalculator.INPUT_OBJECT_TEXT,
@@ -129,7 +136,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test", child1);
         t2 = new TestFieldDifferenceBean(10d, "test", child2);
 
-        introspect(beanInstrospectingConfig);
+        introspect(superclassConfig);
         checkDifferences(
             newClassDifference(
                 "beanField",
@@ -337,7 +344,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        introspect(beanInstrospectingConfig);
+        introspect(superclassConfig);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -699,13 +706,12 @@ public class TestFieldDifferenceCalculator extends TestCase {
         }
     }
 
-    //config with an introspector which includes subclass fields
     private static class SuperclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
 
-        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
-            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
+        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
-                result = new FieldDifferenceCalculator.SuperclassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
+                result = new FieldDifferenceCalculator.SuperclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
             return result;
         }
@@ -714,10 +720,10 @@ public class TestFieldDifferenceCalculator extends TestCase {
     //config with an introspector which includes subclass fields
     private static class SubclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
 
-        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
-            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
+        public FieldDifferenceCalculator.FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+            FieldDifferenceCalculator.FieldIntrospector result = super.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
-                result = new FieldDifferenceCalculator.SubclassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
+                result = new FieldDifferenceCalculator.SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
             return result;
         }

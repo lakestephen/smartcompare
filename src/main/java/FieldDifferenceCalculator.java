@@ -1,4 +1,5 @@
 import java.util.*;
+import java.lang.reflect.Modifier;
 
 /**
  * Created by IntelliJ IDEA.
@@ -6,37 +7,25 @@ import java.util.*;
  * Date: 14-Jul-2009
  * Time: 13:38:06
  *
- * A class which compares field values of two Objects to produce a list of differences.
- * It can also introspect several levels down the bean graph (until it reaches the level defined in maxDepth).
+ * A class which compares two Objects to produce a list of differences.
+ * It can compare fields at top level, or introspect further down the object graph 
+ *
+ * When you create a FieldDifferenceCalculator you pass in a config which defines which fields are considered for the comparison
+ * and which fields are introspected further.
  *
  * The default config compares fields at the top level only (no drill down to introspect further down the object graph)
- *
  * To configure the calculator to introspect further down the graph you have to pass in a Config object,
- * in which you can define:
+ * in which you can define for each field:
+ * --> whether it should be compared, introspected further, or ignored
+ * --> optionally a comparator to do the comparison
+ * The above can be based on the class type, the field name or the path of the field from the comparison root object
  *
- * --> which fields to compare, and optionally a comparator to compare them
- *     Any field which is returned as a comparison field is considered a 'leaf' for the comparison, and drill down
- *     will not occur.
+ * A 'Field' does not necessarily imply a field on a class at language level, although the default introspector does use reflection
+ * to find the fields defined by the class of the objects being compared.
  *
- * --> which fields to 'introspect'
- *     These are drill down fields for the comparison, and the difference calculator will walk down the bean path
- *     for these fields.
- *
- * Any fields which are not defined as 'introspection' fields or 'comparison' fields are simply ignored.
- *
- * It's also possible to configure how introspection is performed -->
- *
- * The Config is asked to supply a FieldIntrospector instance when introspection starts.
- * The FieldIntrospector's responsibility is to parse the object(s) being compared to determine the list of Fields they support
- * Comparison/Introspection can then take place on each field returned.
- *
- * A 'Field' here does not necessarily imply a field on a class at a language level, although this is the default -
- * FieldDifferenceCalculator has it's own Field abstraction which makes it possible for FieldIntrospectors to work at a higher level
+ * FieldDifferenceCalculator has it's own Field abstraction which makes it possible for introspectors to work at a higher level
  * For example, it is possible for an Introspector to return a list of the values in a Map as Fields, where the fields are
  * identified by the keys in the Map. This allows introspection/comparison of Map instances as part of the graph.
- *
- * TODO - check synthetic fields (currently excluded)
- * TODO - exclude static fields
  */
 public class FieldDifferenceCalculator {
 
@@ -45,6 +34,7 @@ public class FieldDifferenceCalculator {
     private static Config DEFAULT_FIELD_ANALYZER = new DefaultConfig();
 
     private List<String> path;
+    private String pathAsString;
     private volatile String description1;
     private volatile String description2;
     private List<Object> visitedNodes1;
@@ -74,6 +64,7 @@ public class FieldDifferenceCalculator {
         this.description2 = description2;
         this.visitedNodes1 = visitedNodes1;
         this.visitedNodes2 = visitedNodes2;
+        this.pathAsString = ClassUtils.getPathAsString(path);
     }
 
     public void setDescription1(String description1) {
@@ -161,8 +152,7 @@ public class FieldDifferenceCalculator {
     }
 
     private void addFields(Class clazz, Object o1, Object o2, List<Field> introspectionFields, List<Field> comparisonFields) {
-
-        FieldIntrospector i = fieldAnalyzer.getFieldIntrospector(path, clazz, o1, o2);
+        FieldIntrospector i = fieldAnalyzer.getFieldIntrospector(pathAsString, clazz, o1, o2);
         List<Field> fields = i.getFields();
         for ( Field f : fields) {
             switch ( fieldAnalyzer.getComparisonFieldType(f)) {
@@ -500,15 +490,15 @@ public class FieldDifferenceCalculator {
             return null;
         }
 
-        public FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
+        public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
-                return new MapIntrospector(pathFromRoot, (Map)o1, (Map)o2);
+                return new MapIntrospector(fieldPath, (Map)o1, (Map)o2);
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
-                return new IterableIntrospector(pathFromRoot, (Iterable)o1, (Iterable)o2);
+                return new IterableIntrospector(fieldPath, o1, o2);
             } else if (commonSuperclass.isArray()) {
-                return new IterableIntrospector(pathFromRoot, (Object[])o1, (Object[])o2);
+                return new IterableIntrospector(fieldPath, o1, o2);
             } else {
-                return new IdenticalClassFieldIntrospector(pathFromRoot, commonSuperclass, o1, o2);
+                return new SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
         }
     }
@@ -523,7 +513,7 @@ public class FieldDifferenceCalculator {
         private Class o1;
         private Class o2;
 
-        public SubclassFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
+        public SubclassFieldIntrospector(String pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
             super(pathFromRoot);
             this.commonSuperclass = commonSuperclass;
             this.o1 = o1.getClass();
@@ -547,8 +537,8 @@ public class FieldDifferenceCalculator {
     public static class SuperclassFieldIntrospector extends ReflectionFieldIntrospector {
         private Class commonSuperclass;
 
-        public SuperclassFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
-            super(pathFromRoot);
+        public SuperclassFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
+            super(path);
             this.commonSuperclass = commonSuperclass;
         }
 
@@ -570,8 +560,8 @@ public class FieldDifferenceCalculator {
         private Class o1;
         private Class o2;
 
-        public IdenticalClassFieldIntrospector(List<String> pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
-            super(pathFromRoot);
+        public IdenticalClassFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
+            super(path);
             this.commonSuperclass = commonSuperclass;
             this.o1 = o1.getClass();
             this.o2 = o2.getClass();
@@ -589,8 +579,8 @@ public class FieldDifferenceCalculator {
 
      public static abstract class ReflectionFieldIntrospector extends AbstractFieldIntrospector {
 
-         public ReflectionFieldIntrospector(List<String> pathFromRoot) {
-             super(pathFromRoot);
+         public ReflectionFieldIntrospector(String path) {
+             super(path);
          }
 
          //find all the fields for this class and superclasses
@@ -598,7 +588,7 @@ public class FieldDifferenceCalculator {
             if ( c != endClass ) {
                 java.lang.reflect.Field[] fields = c.getDeclaredFields();
                 for ( final java.lang.reflect.Field f : fields) {
-                    if ( ! f.isSynthetic() ) {
+                    if ( ! isIgnoreField(f) ) {
                         result.add(new Field() {
                             public Class<?> getType() {
                                 return f.getType();
@@ -628,17 +618,18 @@ public class FieldDifferenceCalculator {
                 }
             }
         }
+
+        protected boolean isIgnoreField(java.lang.reflect.Field f) {
+            return Modifier.isStatic(f.getModifiers());
+        }
     }
 
     public abstract static class AbstractFieldIntrospector implements FieldIntrospector {
 
         private String introspectorPath;
 
-        public AbstractFieldIntrospector(List<String> pathFromRoot) {
-            this.introspectorPath = ClassUtils.getPathAsString(pathFromRoot);
-            if ( introspectorPath.length() > 0) {
-                introspectorPath = introspectorPath + ".";
-            }
+        public AbstractFieldIntrospector(String pathFromRoot) {
+            introspectorPath = pathFromRoot.length() > 0 ? pathFromRoot + "." : "";
         }
 
         public String getPath(String fieldName) {
@@ -655,8 +646,8 @@ public class FieldDifferenceCalculator {
          * @param o1, an Iterable instance or an array
          * @param o2, an Iterable instance or an array
          */
-        public IterableIntrospector(List<String> pathFromRoot, Object o1, Object o2 ) {
-            super(pathFromRoot);
+        public IterableIntrospector(String path, Object o1, Object o2 ) {
+            super(path);
             this.o1 = o1;
             this.o2 = o2;
         }
@@ -752,8 +743,8 @@ public class FieldDifferenceCalculator {
         private Stack<Class> classStack1 = new Stack<Class>();
         private Stack<Class> classStack2 = new Stack<Class>();
 
-        public MapIntrospector(List<String> pathFromRoot, Map o1, Map o2) {
-            super(pathFromRoot);
+        public MapIntrospector(String path, Map o1, Map o2) {
+            super(path);
             this.o1 = o1;
             this.o2 = o2;
         }
@@ -841,9 +832,9 @@ public class FieldDifferenceCalculator {
 
         /**
          * @return an introspector which is responsible for extracting field details for the given comparison objects
-         * which are either instances of Class c, or of subclasses
+         * which are either instances of Class commonSuperclass, or of subclasses of commonSuperclass
          */
-        FieldIntrospector getFieldIntrospector(List<String> pathFromRoot, Class c, Object o1, Object o2);
+        FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
 
     }
 
