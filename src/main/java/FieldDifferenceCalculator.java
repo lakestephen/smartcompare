@@ -155,7 +155,7 @@ public class FieldDifferenceCalculator {
         FieldIntrospector i = fieldAnalyzer.getFieldIntrospector(pathAsString, clazz, o1, o2);
         List<Field> fields = i.getFields();
         for ( Field f : fields) {
-            switch ( fieldAnalyzer.getComparisonFieldType(f)) {
+            switch ( fieldAnalyzer.getCalculatorFieldType(f)) {
                 case INTROSPECTION_FIELD :
                     introspectionFields.add(f);
                     break;
@@ -481,9 +481,8 @@ public class FieldDifferenceCalculator {
 
     public static class DefaultConfig implements Config {
 
-        public ComparisonFieldType getComparisonFieldType(Field f) {
-            //only introspect top level fields by default, no drill down
-            return ComparisonFieldType.COMPARISON_FIELD;
+        public CalculatorFieldType getCalculatorFieldType(Field f) {
+            return CalculatorFieldType.COMPARISON_FIELD;
         }
 
         public Comparator getComparator(Field f) {
@@ -498,15 +497,14 @@ public class FieldDifferenceCalculator {
             } else if (commonSuperclass.isArray()) {
                 return new IterableIntrospector(fieldPath, o1, o2);
             } else {
+                //an introspector which includes differences for fields which are only present in one of the two input objects
                 return new SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
         }
     }
 
     /**
-     * This class introspects fields for two Objects.
-     * The objects may or may not share a common superclass.
-     * Fields with the same name but from different classes are logically different, and are treated as distinct 
+     * Includes differences for subclass fields which are not shared
      */
     public static class SubclassFieldIntrospector extends ReflectionFieldIntrospector {
         private Class commonSuperclass;
@@ -531,8 +529,8 @@ public class FieldDifferenceCalculator {
     }
 
     /**
-     * This class introspects fields from the common superclass upwards for classes which share a common superclass
-     * which is not Object.class. Fields at a subclass level are not included
+     * This class introspects fields from the common superclass upwards
+     * Fields at a subclass level (which are not shared) are not included
      */
     public static class SuperclassFieldIntrospector extends ReflectionFieldIntrospector {
         private Class commonSuperclass;
@@ -552,7 +550,7 @@ public class FieldDifferenceCalculator {
 
     /*
     * This introspector uses reflection to find fields for two objects which are of identical class
-    * If the class type differs, no fields will be returned
+    * If the class type differs no fields will be returned
     */
     public static class IdenticalClassFieldIntrospector extends ReflectionFieldIntrospector {
 
@@ -818,7 +816,7 @@ public class FieldDifferenceCalculator {
          * @return a type which indicates whether the value of this field should be compared,
          * whether we should introspect it to drill down further, or ignore it
          */
-        ComparisonFieldType getComparisonFieldType(Field f);
+        CalculatorFieldType getCalculatorFieldType(Field f);
 
         /**
          * @return comparator to use for Field in cases where the fields compared are not equal by reference.
@@ -885,7 +883,7 @@ public class FieldDifferenceCalculator {
         String getPath();
     }
 
-    public enum ComparisonFieldType {
+    public enum CalculatorFieldType {
         COMPARISON_FIELD,
         INTROSPECTION_FIELD,
         IGNORE_FIELD

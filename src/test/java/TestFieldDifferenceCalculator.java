@@ -152,10 +152,10 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
         //this config suppresses comparison for Color fields so we should get no differences
         introspect(new FieldDifferenceCalculator.DefaultConfig() {
-            public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
+            public FieldDifferenceCalculator.CalculatorFieldType getCalculatorFieldType(FieldDifferenceCalculator.Field f) {
                 return f.getType() == Color.class ?
-                        FieldDifferenceCalculator.ComparisonFieldType.IGNORE_FIELD :
-                        super.getComparisonFieldType(f);
+                        FieldDifferenceCalculator.CalculatorFieldType.IGNORE_FIELD :
+                        super.getCalculatorFieldType(f);
             }
 
         });
@@ -451,9 +451,9 @@ public class TestFieldDifferenceCalculator extends TestCase {
         expectedPaths.add("beanField.beanField");
 
         class FieldPathCheckingConfig extends BeanFieldIntrospectingConfig {
-            public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
+            public FieldDifferenceCalculator.CalculatorFieldType getCalculatorFieldType(FieldDifferenceCalculator.Field f) {
                 expectedPaths.remove(f.getPath());
-                return super.getComparisonFieldType(f);
+                return super.getCalculatorFieldType(f);
             }
         }
         introspect(new FieldPathCheckingConfig());
@@ -686,21 +686,21 @@ public class TestFieldDifferenceCalculator extends TestCase {
 
     private static class BeanFieldIntrospectingConfig extends FieldDifferenceCalculator.DefaultConfig {
 
-        public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
-            FieldDifferenceCalculator.ComparisonFieldType result = super.getComparisonFieldType(f);
+        public FieldDifferenceCalculator.CalculatorFieldType getCalculatorFieldType(FieldDifferenceCalculator.Field f) {
+            FieldDifferenceCalculator.CalculatorFieldType result = super.getCalculatorFieldType(f);
             if ( f.getType() == TestFieldDifferenceBean.class ) {
-                result = FieldDifferenceCalculator.ComparisonFieldType.INTROSPECTION_FIELD;
+                result = FieldDifferenceCalculator.CalculatorFieldType.INTROSPECTION_FIELD;
             }
             return result;
         }
     }
 
     private static class CollectionIntrospectingConfig extends BeanFieldIntrospectingConfig {
-        public FieldDifferenceCalculator.ComparisonFieldType getComparisonFieldType(FieldDifferenceCalculator.Field f) {
-            FieldDifferenceCalculator.ComparisonFieldType result = super.getComparisonFieldType(f);
+        public FieldDifferenceCalculator.CalculatorFieldType getCalculatorFieldType(FieldDifferenceCalculator.Field f) {
+            FieldDifferenceCalculator.CalculatorFieldType result = super.getCalculatorFieldType(f);
             //only introspect top level fields by default, no drill down
             if (Map.class.isAssignableFrom(f.getType()) || Iterable.class.isAssignableFrom(f.getType()) || f.getType().isArray()) {
-                result = FieldDifferenceCalculator.ComparisonFieldType.INTROSPECTION_FIELD;
+                result = FieldDifferenceCalculator.CalculatorFieldType.INTROSPECTION_FIELD;
             }
             return result;
         }
