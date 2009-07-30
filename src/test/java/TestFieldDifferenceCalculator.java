@@ -509,6 +509,25 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
     }
 
+    //there is an ArrayAsListComparator defined by default to allow us to compare arrays more sensibly
+    //this is required since new int[] { 1, 2, 3 }.equals( new int[] { 1, 2, 3 } ) is false, which creates misleading comparison results
+    //n.b. it is also possible to introspect arrays to get an exact list of the differences
+    public void testArrayComparison() {
+        TestBeanSubclass1 t1 = new TestBeanSubclass1(10d, "test", 1, new float[] { 1, 2, 3 });
+        TestBeanSubclass1 t2 = new TestBeanSubclass1(10d, "test", 1, new float[] { 1, 2, 3 });
+        this.t1 = t1;
+        this.t2 = t2;
+
+        introspect(defaultConfig);
+        checkDifferences();
+
+        t2.floatField = new float[] { 1, 2 };
+        introspect(defaultConfig);
+        assertEquals(1, differences.size());
+        assertEquals(t1.floatField, differences.get(0).getFieldValue1());
+        assertEquals(t2.floatField, differences.get(0).getFieldValue2());
+    }
+
     public void testGraphCycle() {
         TestFieldDifferenceBean t1 = new TestFieldDifferenceBean(9d, "test");
         TestFieldDifferenceBean t2 = new TestFieldDifferenceBean(9d, "test");

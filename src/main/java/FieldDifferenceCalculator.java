@@ -306,6 +306,53 @@ public class FieldDifferenceCalculator {
      */
     private static class ClassUtils {
 
+        static List getList(Object array) {
+            List result = null;
+            //this is horrible, is there a better way?
+            //We could use reflection to create the List but that would be slower.
+            if ( array instanceof Object[] ) {
+                result = Arrays.asList((Object[])array);
+            } else {
+                result = new ArrayList();
+                if ( array instanceof int[] ) {
+                    for ( int i : (int[]) array) {
+                        result.add(i);
+                    }
+                } else if ( array instanceof float[] ) {
+                    for ( float f : (float[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof byte[] ) {
+                    for ( byte f : (byte[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof char[] ) {
+                    for ( char f : (char[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof double[] ) {
+                    for ( double f : (double[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof short[] ) {
+                    for ( short f : (short[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof long[] ) {
+                    for ( long f : (long[]) array) {
+                        result.add(f);
+                    }
+                } else if ( array instanceof boolean[] ) {
+                    for ( boolean f : (boolean[]) array) {
+                        result.add(f);
+                    }
+                } else {
+                    throw new UnsupportedOperationException("Cannot convert array to List, argument was not an array instance");
+                }
+            }
+            return result;
+        }
+
         static String getPathAsString(List<String> pathFromRoot) {
             Iterator<String> i = pathFromRoot.iterator();
             StringBuilder sb = new StringBuilder();
@@ -481,25 +528,43 @@ public class FieldDifferenceCalculator {
 
     public static class DefaultConfig implements Config {
 
+        private static final ArrayAsListComparator arrayAsListComparator = new ArrayAsListComparator();
+
         public CalculatorFieldType getCalculatorFieldType(Field f) {
             return CalculatorFieldType.COMPARISON_FIELD;
         }
 
         public Comparator getComparator(Field f) {
-            return null;
+            Comparator result = null;
+            if ( f.getType().isArray()) {
+                return arrayAsListComparator;
+            }
+            return result;
         }
 
         public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
                 return new MapIntrospector(fieldPath, (Map)o1, (Map)o2);
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
-                return new IterableIntrospector(fieldPath, o1, o2);
+                return new IterableIntrospector(fieldPath, (Iterable)o1, (Iterable)o2);
             } else if (commonSuperclass.isArray()) {
-                return new IterableIntrospector(fieldPath, o1, o2);
+                return new ArrayIntrospector(fieldPath, o1, o2);
             } else {
                 //an introspector which includes differences for fields which are only present in one of the two input objects
                 return new SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
+        }
+    }
+
+    private static class ArrayAsListComparator implements Comparator {
+        public int compare(Object o1, Object o2) {
+            int result = 0;
+            if ( o1 != o2) {
+                List l1 = ClassUtils.getList(o1);
+                List l2 = ClassUtils.getList(o2);
+                result = l1.equals(l2) ? 0 : l1.size() >= l2.size() ? -1 : 1;
+            }
+            return result;
         }
     }
 
@@ -635,35 +700,36 @@ public class FieldDifferenceCalculator {
         }
     }
 
-    public static class IterableIntrospector extends AbstractFieldIntrospector {
+    public static class AbstractListIntrospector extends AbstractFieldIntrospector {
 
+        private List list1;
         private Object o1;
+        private List list2;
         private Object o2;
 
         /**
          * @param o1, an Iterable instance or an array
          * @param o2, an Iterable instance or an array
          */
-        public IterableIntrospector(String path, Object o1, Object o2 ) {
+        public AbstractListIntrospector(String path, List list1, Object o1, List list2, Object o2 ) {
             super(path);
+            this.list1 = list1;
             this.o1 = o1;
+            this.list2 = list2;
             this.o2 = o2;
         }
 
         public List<Field> getFields() {
-            final List l1 = getList(o1);
-            final List l2 = getList(o2);
-
             List<Field> result = new ArrayList<Field>();
-            int maxSize = Math.max(l1.size(), l2.size());
+            int maxSize = Math.max(list1.size(), list2.size());
             for (int loop=0; loop < maxSize; loop++) {
                 final int currentIndex = loop;
                 Field f = new Field() {
 
                     public Class<?> getType() {
                         return ClassUtils.getCommonSuperclass(
-                            getClassAt(l1, currentIndex),
-                            getClassAt(l2, currentIndex)
+                            getClassAt(list1, currentIndex),
+                            getClassAt(list2, currentIndex)
                         );
                     }
 
@@ -679,7 +745,7 @@ public class FieldDifferenceCalculator {
                     }
 
                     public Object getValue(Object o) throws Exception {
-                        return o == o1 ? getValueAt(l1, currentIndex) : getValueAt(l2, currentIndex);
+                        return o == o1 ? getValueAt(list1, currentIndex) : getValueAt(list2, currentIndex);
                     }
 
                     private Object getValueAt(List l, int fieldIndex) {
@@ -691,43 +757,41 @@ public class FieldDifferenceCalculator {
                     }
 
                     public String getPath() {
-                        return IterableIntrospector.this.getPath(getName());
+                        return AbstractListIntrospector.this.getPath(getName());
                     }
                 };
                 result.add(f);
             }
             return result;
         }
+    }
 
-        private List getList(Object i) {
-            if ( i instanceof Iterable) {
-                List l = new ArrayList();
-                for ( Object o: (Iterable)i) {
-                    l.add(o);
+    public static class ArrayIntrospector extends AbstractListIntrospector {
+
+        public ArrayIntrospector(String path, Object o1, Object o2 ) {
+            super(path, ClassUtils.getList(o1), o1, ClassUtils.getList(o2), o2);
+        }
+    }
+
+    public static class IterableIntrospector extends AbstractListIntrospector {
+
+        public IterableIntrospector(String path, Iterable o1, Iterable o2 ) {
+            super(path, getList(o1), o1, getList(o2), o2);
+        }
+
+        private static List getList(Iterable i) {
+            List result;
+            if ( i instanceof List && i instanceof RandomAccess ) {
+                result = (List)i;
+            } else if ( i instanceof Collection ) {
+                result = new ArrayList((Collection)i);
+            } else {
+                result = new ArrayList();
+                for ( Object o: i) {
+                    result.add(o);
                 }
-                return l;
-            //I know this looks horrible, is there a better way?
-            //could use reflection to create a List but that would be slower.
-            } else if ( i instanceof Object[] ) {
-                return Arrays.asList((Object[])i);
-            } else if ( i instanceof int[] ) {
-                return Arrays.asList((int[])i);
-            } else if ( i instanceof float[] ) {
-                return Arrays.asList((float[])i);
-            } else if ( i instanceof byte[] ) {
-                return Arrays.asList((byte[])i);
-            } else if ( i instanceof char[] ) {
-                return Arrays.asList((char[])i);
-            } else if ( i instanceof double[] ) {
-                return Arrays.asList((double[])i);
-            } else if ( i instanceof short[] ) {
-                return Arrays.asList((short[])i);
-            } else if ( i instanceof long[] ) {
-                return Arrays.asList((long[])i);
-            } else if ( i instanceof boolean[] ) {
-                return Arrays.asList((boolean[])i);
             }
-            throw new UnsupportedOperationException("IterableIntrospector unsupported iterable type");
+            return result;
         }
     }
 
