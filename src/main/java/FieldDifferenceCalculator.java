@@ -100,8 +100,10 @@ public class FieldDifferenceCalculator {
     public void printDifferences(Object o1, Object o2, Appendable s) {
         List<Difference> differences = getDifferences(o1, o2);
         try {
-            for ( Difference d : differences) {
-                s.append(d.toString());
+            Iterator<Difference> i = differences.iterator();
+            while( i.hasNext()) {
+                String difference = i.next().toString();
+                s.append(i.hasNext() ? difference + "\n" : difference);
             }
         } catch (IOException e) {
             e.printStackTrace();

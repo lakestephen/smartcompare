@@ -1,5 +1,7 @@
 import junit.framework.TestCase;
 
+import java.awt.*;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Nick Ebbutt
@@ -8,23 +10,71 @@ import junit.framework.TestCase;
  */
 public class DemoFieldDiffererenceCalculator extends TestCase {
 
+    private StringBuilder sb = new StringBuilder();
+    public FieldDifferenceCalculator f;
+
+    public void setUp() {
+        sb.setLength(0);
+        f = new FieldDifferenceCalculator("record1", "record2");
+    }
+
     public void testSimpleDifference() {
 
-        class Shape {
-            private int width;
-            private int height;
+        class Recording {
+            int lengthInMinutes;
 
-            public Shape(int width, int height) {
-                this.width = width;
-                this.height = height;
+            public Recording(int lengthInMinutes) {
+                this.lengthInMinutes = lengthInMinutes;
             }
         }
 
-        Shape s1 = new Shape(10, 10);
-        Shape s2 = new Shape(5, 10);
+        Recording recording1 = new Recording(10);
+        Recording recording2 = new Recording(20);
 
-        FieldDifferenceCalculator f = new FieldDifferenceCalculator("shape1", "shape2");
-        f.printDifferences(s1, s2);
+        f.printDifferences(recording1, recording2, sb);
+        assertEquals("lengthInMinutes->record1:[10] record2:[20]\n", sb.toString());
+    }
+
+
+    public void testArrays() {
+
+        class Recording {
+            int lengthInMinutes;
+            String[] artistNames;
+
+            Recording(int lengthInMinutes, String[] artistNames) {
+                this.lengthInMinutes = lengthInMinutes;
+                this.artistNames = artistNames;
+            }
+        }
+
+        Recording recording1 = new Recording(10, new String[] { "Elton John" });
+        Recording recording2 = new Recording(20, new String[] { "Elton John" });
+        f.introspectPath("artistNames");
+
+        f.printDifferences(recording1, recording2, sb);
+        assertEquals("lengthInMinutes->record1:[10] record2:[20]", sb.toString());
+
+        sb.setLength(0);
+        recording2.artistNames = new String[] { "Elvis Presley" };
+        f.printDifferences(recording1, recording2, sb);
+        assertEquals(
+            "lengthInMinutes->record1:[10] record2:[20]\n" +
+            "artistNames.0->record1:[Elton John] record2:[Elvis Presley]",
+            sb.toString()
+        );
+
+
+        sb.setLength(0);
+        recording2.artistNames = new String[] { "Elvis Presley", "Eric Clapton" };
+        f.printDifferences(recording1, recording2, sb);
+        assertEquals(
+            "lengthInMinutes->record1:[10] record2:[20]\n" +
+            "artistNames.0->record1:[Elton John] record2:[Elvis Presley]\n" +
+            "artistNames.1->record1:[Undefined Field] record2:[Eric Clapton]",
+            sb.toString()
+        );
+
     }
 
 }
