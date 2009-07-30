@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.Modifier;
 
 /**
@@ -31,7 +32,7 @@ public class FieldDifferenceCalculator {
 
     public static final String INPUT_OBJECT_TEXT = "";
 
-    private static Config DEFAULT_FIELD_ANALYZER = new DefaultConfig();
+    private static Config DEFAULT_CONFIG = new DefaultConfig();
 
     private List<String> path;
     private String pathAsString;
@@ -42,7 +43,7 @@ public class FieldDifferenceCalculator {
     private Config fieldAnalyzer;
 
     public FieldDifferenceCalculator() {
-        this(DEFAULT_FIELD_ANALYZER);
+        this(DEFAULT_CONFIG);
     }
 
     public FieldDifferenceCalculator(Config fieldAnalyzer) {
@@ -50,7 +51,7 @@ public class FieldDifferenceCalculator {
     }
 
     public FieldDifferenceCalculator(String description1, String description2) {
-        this(description1, description2, DEFAULT_FIELD_ANALYZER, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
+        this(description1, description2, DEFAULT_CONFIG, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
     public FieldDifferenceCalculator(String description1, String description2, Config fieldAnalyzer) {
@@ -554,6 +555,70 @@ public class FieldDifferenceCalculator {
                 return new SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
             }
         }
+    }
+
+    public static class PathConfig extends DefaultConfig {
+
+        private boolean ignoreByDefault;
+        private Map<String, IntrospectorFactory> pathToIntrospector = new ConcurrentHashMap<String, IntrospectorFactory>();
+        private Set<String> ignorePaths = new HashSet<String>();
+        private Set<String> comparePaths = new HashSet<String>();
+        private Set<String> introspectPaths = new HashSet<String>();
+
+        public PathConfig() {}
+
+        /**
+         * @param ignoreAllByDefault - if true default behaviour is to ignore all paths, otherwise default is compare all paths
+         */
+        public PathConfig(boolean ignoreAllByDefault) {
+            this.ignoreByDefault = ignoreAllByDefault;
+        }
+
+        public CalculatorFieldType getCalculatorFieldType(Field f) {
+            CalculatorFieldType result;
+            if ( introspectPaths.contains(f.getPath())) {
+                result = CalculatorFieldType.INTROSPECTION_FIELD;
+            } else {
+                if (ignoreByDefault) {
+                    result = comparePaths.contains(f.getPath()) ? CalculatorFieldType.COMPARISON_FIELD : CalculatorFieldType.IGNORE_FIELD;
+                } else {
+                    result = ignorePaths.contains(f.getPath()) ? CalculatorFieldType.IGNORE_FIELD : CalculatorFieldType.COMPARISON_FIELD;
+                }
+            }
+            return result;
+        }
+
+        public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+            IntrospectorFactory f = pathToIntrospector.get(fieldPath);
+            return f != null ?
+                    f.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2) :
+                    super.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
+        }
+
+        public PathConfig ignorePath(String path) {
+            ignorePaths.add(path);
+            return this;
+        }
+
+        public PathConfig comparePath(String path) {
+            comparePaths.add(path);
+            return this;
+        }
+
+        public PathConfig introspectPath(String path) {
+            introspectPaths.add(path);
+            return this;
+        }
+
+        public PathConfig introspectPath(String path, IntrospectorFactory f) {
+            introspectPaths.add(path);
+            pathToIntrospector.put(path, f);
+            return this;
+        }
+    }
+
+    public interface IntrospectorFactory {
+        FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2);
     }
 
     private static class ArrayAsListComparator implements Comparator {
