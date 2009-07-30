@@ -579,7 +579,7 @@ public class FieldDifferenceCalculator {
             return result;
         }
 
-        private boolean isIgnoreField(Field f) {
+        protected boolean isIgnoreField(Field f) {
             Boolean result = ignorePaths.get(f.getPath());
             //do we already know wether to ignore this field?, if not see if it matches a pattern
             if ( result == null) {
