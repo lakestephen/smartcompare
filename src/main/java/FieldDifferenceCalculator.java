@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -561,9 +562,12 @@ public class FieldDifferenceCalculator {
     public static class DefaultConfig implements Config {
 
         private static final ArrayAsListComparator arrayAsListComparator = new ArrayAsListComparator();
+        private List<Pattern> ignorePatterns = new ArrayList<Pattern>();
+        private Map<String, Boolean> ignorePaths = new HashMap<String, Boolean>();
+        private List<Pattern> introspectPatterns = new ArrayList<Pattern>();
+        private Map<String, Boolean> introspectPaths = new HashMap<String, Boolean>();
+        private Map<Pattern, IntrospectorFactory> patternToIntrospector = new ConcurrentHashMap<Pattern, IntrospectorFactory>();
         private Map<String, IntrospectorFactory> pathToIntrospector = new ConcurrentHashMap<String, IntrospectorFactory>();
-        private Set<String> ignorePaths = new HashSet<String>();
-        private Set<String> introspectPaths = new HashSet<String>();
 
         public CalculatorFieldType getCalculatorFieldType(Field f) {
             CalculatorFieldType result;
@@ -576,11 +580,40 @@ public class FieldDifferenceCalculator {
         }
 
         private boolean isIgnoreField(Field f) {
-            return ignorePaths.contains(f.getPath());
+            Boolean result = ignorePaths.get(f.getPath());
+            //do we already know wether to ignore this field?, if not see if it matches a pattern
+            if ( result == null) {
+                result = false;
+                for ( Pattern p : ignorePatterns) {
+                    result = (p.matcher(f.getPath()).matches());
+                    if ( result ) {
+                        break;
+                    }
+                }
+                ignorePaths.put(f.getPath(), result);
+            }
+            return result;
         }
 
         protected boolean isIntrospectField(Field f) {
-            return introspectPaths.contains(f.getPath());
+            String path = f.getPath();
+            Boolean result = introspectPaths.get(path);
+            //do we already know wether to introspect this field?, if not see if it matches a pattern
+            if ( result == null) {
+                result = false;
+                for ( Pattern p : introspectPatterns) {
+                    result = (p.matcher(path).matches());
+                    if ( result ) {
+                        //is there a specific introspector defined to use?
+                        if (patternToIntrospector.containsKey(p)) {
+                            pathToIntrospector.put(path, patternToIntrospector.get(p));
+                        }
+                        break;
+                    }
+                }
+                introspectPaths.put(path, result);
+            }
+            return result;
         }
 
         protected IntrospectorFactory getIntrospectorFactory(String fieldPath) {
@@ -616,20 +649,36 @@ public class FieldDifferenceCalculator {
         }
 
         public Config ignorePath(String path) {
-            ignorePaths.add(path);
+            clearIgnoreMaps();
+            ignorePatterns.add(Pattern.compile(path));
             return this;
         }
 
         public Config introspectPath(String path) {
-            introspectPaths.add(path);
+            clearIntrospectionMaps();
+            introspectPatterns.add(Pattern.compile(path));
             return this;
         }
 
         public Config introspectPath(String path, IntrospectorFactory f) {
-            introspectPaths.add(path);
-            pathToIntrospector.put(path, f);
+            clearIntrospectionMaps();
+            Pattern p = Pattern.compile(path);
+            introspectPatterns.add(p);
+            patternToIntrospector.put(p, f);
             return this;
         }
+        
+        //ignore patterns are changing, clear our precomputed field maps
+        private void clearIgnoreMaps() {
+            ignorePaths.clear();
+        }
+
+        //introspection patterns are changing, clear our precomputed field maps
+        private void clearIntrospectionMaps() {
+            introspectPaths.clear();
+            pathToIntrospector.clear();
+        }
+
     }
 
     public interface IntrospectorFactory {

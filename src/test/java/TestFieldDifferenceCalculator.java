@@ -575,6 +575,40 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
     }
 
+    public void testIgnorePatterns() {
+        t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
+        t2 = new TestFieldDifferenceBean(10d, "test", Color.BLACK);
+
+        FieldDifferenceCalculator c = new FieldDifferenceCalculator().ignorePath("color.*");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+
+        t1 = new TestFieldDifferenceBean(0d, "test", new TestFieldDifferenceBean(2d, "test"));
+        t2 = new TestFieldDifferenceBean(1d, "test", new TestFieldDifferenceBean(3d, "test"));
+
+        c.introspectPath("beanField");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences(
+            newValueDifference(
+                "doubleField",
+                "object1:[0.0] object2:[1.0]",
+                0d,
+                1d
+            ),
+            newValueDifference(
+                "doubleField",
+                "object1:[2.0] object2:[3.0]",
+                2d,
+                3d,
+                "beanField"
+            )
+        );
+
+        c.ignorePath(".*doubleField");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+    }
+
     private void introspect(FieldDifferenceCalculator.Config f) {
         differences = new FieldDifferenceCalculator(f).getDifferences(t1, t2);
     }
