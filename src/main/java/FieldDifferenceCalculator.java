@@ -1,6 +1,7 @@
+import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.reflect.Modifier;
 
 /**
  * Created by IntelliJ IDEA.
@@ -89,6 +90,21 @@ public class FieldDifferenceCalculator {
     public FieldDifferenceCalculator introspectPath(String path, IntrospectorFactory f) {
         config.introspectPath(path, f);
         return this;
+    }
+
+    public void printDifferences(Object o1, Object o2) {
+        printDifferences(o1, o2, System.out);
+    }
+
+    public void printDifferences(Object o1, Object o2, Appendable s) {
+        List<Difference> differences = getDifferences(o1, o2);
+        try {
+            for ( Difference d : differences) {
+                s.append(d.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public synchronized List<Difference> getDifferences(Object o1, Object o2) {
