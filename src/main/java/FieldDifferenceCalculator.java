@@ -1028,17 +1028,18 @@ public class FieldDifferenceCalculator {
         FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
 
         /**
-         * Request that the calculator ignores fields with the given path
+         * Request that the calculator ignores fields with paths matching the path pattern provided
          */
         Config ignorePath(String path);
 
         /**
-         * Request that the calculator introspects fields with the given path using a default introspector
+         * Request that the calculator introspects fields with paths matching the path pattern provided, using a default introspector
          */
         Config introspectPath(String path);
 
         /**
-         * Request that the calculator introspects fields with the given path using the supplied introspector factory to create an introspector instance
+         * Request that the calculator introspects fields with paths matching the path pattern provided 
+         * using the supplied introspector factory to create an introspector instance
          */
         Config introspectPath(String path, IntrospectorFactory f);
     }
