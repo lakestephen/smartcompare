@@ -310,9 +310,9 @@ public class TestFieldDifferenceCalculator extends TestCase {
             ),
             newFieldDifference(
                 "key3",
-                "object1:[test] object2:[Undefined Field]",
+                "object1:[test] object2:[Undefined]",
                 "test",
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE,
                 "mapField"
             )
         );
@@ -387,26 +387,26 @@ public class TestFieldDifferenceCalculator extends TestCase {
             ),
             newFieldDifference(
                 "intField",
-                "object1:[100] object2:[Undefined Field]",
+                "object1:[100] object2:[Undefined]",
                 100,
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
-            ),
-            newFieldDifference(
-                "floatField",
-                "object1:[null] object2:[Undefined Field]",
-                null,
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE
             ),
             newFieldDifference(
                 "intField",
-                "object1:[Undefined Field] object2:[10]",
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
+                "object1:[Undefined] object2:[10]",
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE,
                 10
             ),
             newFieldDifference(
+                "floatField",
+                "object1:[null] object2:[Undefined]",
+                null,
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE
+            ),
+            newFieldDifference(
                 "listField",
-                "object1:[Undefined Field] object2:[null]",
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD,
+                "object1:[Undefined] object2:[null]",
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE,
                 null
             )
         );
@@ -480,9 +480,9 @@ public class TestFieldDifferenceCalculator extends TestCase {
             ),
             newFieldDifference(
                 "iterableField.3",
-                "object1:[item4] object2:[Undefined Field]",
+                "object1:[item4] object2:[Undefined]",
                 "item4",
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE
             )
         );
     }
@@ -501,9 +501,9 @@ public class TestFieldDifferenceCalculator extends TestCase {
             ),
             newFieldDifference(
                 "2",
-                "object1:[test3] object2:[Undefined Field]",
+                "object1:[test3] object2:[Undefined]",
                 "test3",
-                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD
+                FieldDifferenceCalculator.FieldIntrospector.UNDEFINED_FIELD_VALUE
             )
 
         );
@@ -524,8 +524,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t2.floatField = new float[] { 1, 2 };
         introspect(defaultConfig);
         assertEquals(1, differences.size());
-        assertEquals(t1.floatField, differences.get(0).getFieldValue1());
-        assertEquals(t2.floatField, differences.get(0).getFieldValue2());
+        assertEquals(3.0f, differences.get(0).getFieldValue1());
     }
 
     public void testGraphCycle() {
@@ -579,14 +578,14 @@ public class TestFieldDifferenceCalculator extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
         t2 = new TestFieldDifferenceBean(10d, "test", Color.BLACK);
 
-        FieldDifferenceCalculator c = new FieldDifferenceCalculator().ignorePath("color.*");
+        FieldDifferenceCalculator c = new FieldDifferenceCalculator().ignorePaths("color.*");
         differences = c.getDifferences(t1, t2);
         checkDifferences();
 
         t1 = new TestFieldDifferenceBean(0d, "test", new TestFieldDifferenceBean(2d, "test"));
         t2 = new TestFieldDifferenceBean(1d, "test", new TestFieldDifferenceBean(3d, "test"));
 
-        c.introspectPath("beanField");
+        c.introspectPaths("beanField");
         differences = c.getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
@@ -604,7 +603,7 @@ public class TestFieldDifferenceCalculator extends TestCase {
             )
         );
 
-        c.ignorePath(".*doubleField");
+        c.ignorePaths(".*doubleField");
         differences = c.getDifferences(t1, t2);
         checkDifferences();
     }

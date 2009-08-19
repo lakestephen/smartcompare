@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * To configure the calculator to introspect further down the graph you have to pass in a Config object,
  * in which you can define for each field:
  * --> whether it should be compared, introspected further, or ignored
- * --> optionally a comparator to do the comparison
+ * --> if the field is to be compared, optionally a comparator to handle this
  * The above can be based on the class type, the field name or the path of the field from the comparison root object
  *
  * A 'Field' does not necessarily imply a field on a class at language level, although the default introspector does use reflection
@@ -78,18 +78,18 @@ public class FieldDifferenceCalculator {
         this.description2 = description2;
     }
 
-    public FieldDifferenceCalculator ignorePath(String path) {
-        config.ignorePath(path);
+    public FieldDifferenceCalculator ignorePaths(String... paths) {
+        config.ignorePaths(paths);
         return this;
     }
 
-    public FieldDifferenceCalculator introspectPath(String path) {
-        config.introspectPath(path);
+    public FieldDifferenceCalculator introspectPaths(String... paths) {
+        config.introspectPaths(paths);
         return this;
     }
 
-    public FieldDifferenceCalculator introspectPath(String path, IntrospectorFactory f) {
-        config.introspectPath(path, f);
+    public FieldDifferenceCalculator introspectPaths(IntrospectorFactory f, String... paths) {
+        config.introspectPaths(f, paths);
         return this;
     }
 
@@ -321,7 +321,7 @@ public class FieldDifferenceCalculator {
     //e.g. these are two different subclasses with differing fields at a subclass level
     private Difference getUndefinedFieldDifference(String fieldName, Object fieldValue1, Object fieldValue2) {
         Difference d = null;
-        if (fieldValue1 == FieldIntrospector.UNDEFINED_FIELD || fieldValue2 == FieldIntrospector.UNDEFINED_FIELD) {
+        if (fieldValue1 == FieldIntrospector.UNDEFINED_FIELD_VALUE || fieldValue2 == FieldIntrospector.UNDEFINED_FIELD_VALUE) {
             d = new Difference(DifferenceType.FIELD, path, fieldName, getDifferenceDescription(fieldValue1, fieldValue2), fieldValue1, fieldValue2);
         }
         return d;
@@ -448,6 +448,19 @@ public class FieldDifferenceCalculator {
             if ( superclass != null) {
                 addToStack(classStack, superclass);
             }
+        }
+
+        public static boolean isPrimativeOrStringArray(Class<?> type) {
+            return type.isArray() &&
+              (int[].class.equals(type) ||
+               float[].class.equals(type) ||
+               double[].class.equals(type) ||
+               long[].class.equals(type) ||
+               String[].class.equals(type) ||
+               byte[].class.equals(type) ||
+               char[].class.equals(type) ||
+               short[].class.equals(type) ||
+               boolean[].class.equals(type));
         }
     }
 
@@ -585,16 +598,27 @@ public class FieldDifferenceCalculator {
             Boolean result = ignorePaths.get(f.getPath());
             //do we already know wether to ignore this field?, if not see if it matches a pattern
             if ( result == null) {
-                result = false;
-                for ( Pattern p : ignorePatterns) {
-                    result = (p.matcher(f.getPath()).matches());
-                    if ( result ) {
-                        break;
-                    }
+                result = isAlwaysIgnoreField(f);
+                if ( ! result ) {
+                    result = searchIgnorePatterns(f, result);
                 }
                 ignorePaths.put(f.getPath(), result);
             }
             return result;
+        }
+
+        private Boolean searchIgnorePatterns(Field f, Boolean result) {
+            for ( Pattern p : ignorePatterns) {
+                result = (p.matcher(f.getPath()).matches());
+                if ( result ) {
+                    break;
+                }
+            }
+            return result;
+        }
+
+        protected boolean isAlwaysIgnoreField(Field f) {
+            return false;
         }
 
         protected boolean isIntrospectField(Field f) {
@@ -602,20 +626,39 @@ public class FieldDifferenceCalculator {
             Boolean result = introspectPaths.get(path);
             //do we already know wether to introspect this field?, if not see if it matches a pattern
             if ( result == null) {
-                result = false;
-                for ( Pattern p : introspectPatterns) {
-                    result = (p.matcher(path).matches());
-                    if ( result ) {
-                        //is there a specific introspector defined to use?
-                        if (patternToIntrospector.containsKey(p)) {
-                            pathToIntrospector.put(path, patternToIntrospector.get(p));
-                        }
-                        break;
-                    }
+                result = isAlwaysIntrospectField(f);
+                if ( ! result ) {
+                    result = searchIntrospectPatterns(path, result);
                 }
                 introspectPaths.put(path, result);
             }
             return result;
+        }
+
+        private Boolean searchIntrospectPatterns(String path, Boolean result) {
+            for ( Pattern p : introspectPatterns) {
+                result = (p.matcher(path).matches());
+                if ( result ) {
+                    //is there a specific introspector defined to use?
+                    if (patternToIntrospector.containsKey(p)) {
+                        pathToIntrospector.put(path, patternToIntrospector.get(p));
+                    }
+                    break;
+                }
+            }
+            return result;
+        }
+
+        protected boolean isAlwaysIntrospectField(Field f) {
+            boolean result =
+               ClassUtils.isPrimativeOrStringArray(f.getType()) ||
+               Map.class.isAssignableFrom(f.getType()) ||
+               Iterable.class.isAssignableFrom(f.getType());
+               //Sets are iterable, but only sorted sets can be introspected - for those
+               //the order is defined and we can index the values meaningfully as fields
+               //unsorted sets will be compared, rather than introspected
+               return result && (! Set.class.isAssignableFrom(f.getType()) ||
+                    SortedSet.class.isAssignableFrom(f.getType()));
         }
 
         protected IntrospectorFactory getIntrospectorFactory(String fieldPath) {
@@ -650,34 +693,36 @@ public class FieldDifferenceCalculator {
             }
         }
 
-        public Config ignorePath(String path) {
-            clearIgnoreMaps();
-            ignorePatterns.add(Pattern.compile(path));
+        public Config ignorePaths(String... paths) {
+            clearState();
+            for (String path : paths ) {
+              ignorePatterns.add(Pattern.compile(path));
+            }
             return this;
         }
 
-        public Config introspectPath(String path) {
-            clearIntrospectionMaps();
-            introspectPatterns.add(Pattern.compile(path));
+        public Config introspectPaths(String... paths) {
+            clearState();
+            for (String path : paths ) {
+                introspectPatterns.add(Pattern.compile(path));
+            }
             return this;
         }
 
-        public Config introspectPath(String path, IntrospectorFactory f) {
-            clearIntrospectionMaps();
-            Pattern p = Pattern.compile(path);
-            introspectPatterns.add(p);
-            patternToIntrospector.put(p, f);
+        public Config introspectPaths(IntrospectorFactory f, String... paths) {
+            clearState();
+            for (String path : paths) {
+                Pattern p = Pattern.compile(path);
+                introspectPatterns.add(p);
+                patternToIntrospector.put(p, f);
+            }
             return this;
         }
         
         //ignore patterns are changing, clear our precomputed field maps
-        private void clearIgnoreMaps() {
-            ignorePaths.clear();
-        }
-
-        //introspection patterns are changing, clear our precomputed field maps
-        private void clearIntrospectionMaps() {
+        private void clearState() {
             introspectPaths.clear();
+            ignorePaths.clear();
             pathToIntrospector.clear();
         }
 
@@ -792,7 +837,7 @@ public class FieldDifferenceCalculator {
                                 if ( ! f.isAccessible()) {
                                     f.setAccessible(true);
                                 }
-                                return f.getDeclaringClass().isAssignableFrom(o1.getClass()) ? f.get(o1) : UNDEFINED_FIELD;
+                                return f.getDeclaringClass().isAssignableFrom(o1.getClass()) ? f.get(o1) : UNDEFINED_FIELD_VALUE;
                             }
 
                             public String getName() {
@@ -880,7 +925,7 @@ public class FieldDifferenceCalculator {
                     }
 
                     private Object getValueAt(List l, int fieldIndex) {
-                        return ( l.size() > fieldIndex) ? l.get(fieldIndex) : UNDEFINED_FIELD;
+                        return ( l.size() > fieldIndex) ? l.get(fieldIndex) : UNDEFINED_FIELD_VALUE;
                     }
 
                     public String getName() {
@@ -998,7 +1043,7 @@ public class FieldDifferenceCalculator {
         }
 
         private Object doGetValue(Map m, Object key) {
-            return m.containsKey(key) ? m.get(key) : UNDEFINED_FIELD;
+            return m.containsKey(key) ? m.get(key) : UNDEFINED_FIELD_VALUE;
         }
     }
 
@@ -1024,26 +1069,30 @@ public class FieldDifferenceCalculator {
 
 
         /**
-         * @return an introspector which is responsible for extracting field details for the given comparison objects
-         * which are either instances of Class commonSuperclass, or of subclasses of commonSuperclass
+         * @return an introspector which is responsible for extracting field details for the introspection objects,
+         * - these objects are the values for a Field for which getCalculatorFieldType() has returned INTROSPECTION_FIELD
+         * each object will either have class type commonSuperclass, or be an instance of one of commonSuperclass' subclasses.
+         *
+         * There are no fixed rules as to how an Introspector should generate a list of Fields.
+         * Introspectors may either handle subclasses, or ignore them
          */
         FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
 
         /**
          * Request that the calculator ignores fields with paths matching the path pattern provided
          */
-        Config ignorePath(String path);
+        Config ignorePaths(String... path);
 
         /**
          * Request that the calculator introspects fields with paths matching the path pattern provided, using a default introspector
          */
-        Config introspectPath(String path);
+        Config introspectPaths(String... path);
 
         /**
          * Request that the calculator introspects fields with paths matching the path pattern provided 
          * using the supplied introspector factory to create an introspector instance
          */
-        Config introspectPath(String path, IntrospectorFactory f);
+        Config introspectPaths(IntrospectorFactory f, String... paths);
     }
 
     /**
@@ -1056,10 +1105,12 @@ public class FieldDifferenceCalculator {
      * in the map as field instances
      */
     public static interface FieldIntrospector {
-        //a value which should be returned if a field is undefined for a given object
-        Object UNDEFINED_FIELD = new Object() {
+
+        //a value which should be returned if a field is undefined
+        //for a given object, or a value cannot otherwise be determined
+        Object UNDEFINED_FIELD_VALUE = new Object() {
             public String toString() {
-                return "Undefined Field";
+                return "Undefined";
             }
         };
 
