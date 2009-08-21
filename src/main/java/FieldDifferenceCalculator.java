@@ -88,7 +88,7 @@ public class FieldDifferenceCalculator {
         return this;
     }
 
-    public FieldDifferenceCalculator introspectPaths(IntrospectorFactory f, String... paths) {
+    public FieldDifferenceCalculator introspectPaths(FieldIntrospector f, String... paths) {
         config.introspectPaths(f, paths);
         return this;
     }
@@ -186,9 +186,9 @@ public class FieldDifferenceCalculator {
         return result;
     }
 
-    private void addFields(Class clazz, Object o1, Object o2, List<Field> introspectionFields, List<Field> comparisonFields) {
-        FieldIntrospector i = config.getFieldIntrospector(pathAsString, clazz, o1, o2);
-        List<Field> fields = i.getFields();
+    private void addFields(Class commonSuperclass, Object o1, Object o2, List<Field> introspectionFields, List<Field> comparisonFields) {
+        FieldIntrospector i = config.getFieldIntrospector(pathAsString, commonSuperclass, o1, o2);
+        List<Field> fields = i.getFields(pathAsString, commonSuperclass, o1, o2);
         for ( Field f : fields) {
             switch ( config.getCalculatorFieldType(f)) {
                 case INTROSPECTION_FIELD :
@@ -281,10 +281,10 @@ public class FieldDifferenceCalculator {
 
         private Difference getFieldDifference(Field f, Object fieldValue1, Object fieldValue2) {
             Difference fieldDifference;
-            Comparator c = config.getComparator(f);
+            EqualityComparator c = config.getComparator(f);
             if ( c != null ) {
-                int comparison = c.compare(fieldValue1, fieldValue2);
-                fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, comparison == 0);
+                boolean isEqual = c.isEqual(fieldValue1, fieldValue2);
+                fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, isEqual);
             } else if ( fieldValue1 instanceof Comparable ) {
                 int comparison = ((Comparable)fieldValue1).compareTo(fieldValue2);
                 fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, comparison == 0);
@@ -321,7 +321,7 @@ public class FieldDifferenceCalculator {
     //e.g. these are two different subclasses with differing fields at a subclass level
     private Difference getUndefinedFieldDifference(String fieldName, Object fieldValue1, Object fieldValue2) {
         Difference d = null;
-        if (fieldValue1 == FieldIntrospector.UNDEFINED_FIELD_VALUE || fieldValue2 == FieldIntrospector.UNDEFINED_FIELD_VALUE) {
+        if (fieldValue1 == Field.UNDEFINED_FIELD_VALUE || fieldValue2 == Field.UNDEFINED_FIELD_VALUE) {
             d = new Difference(DifferenceType.FIELD, path, fieldName, getDifferenceDescription(fieldValue1, fieldValue2), fieldValue1, fieldValue2);
         }
         return d;
@@ -404,6 +404,7 @@ public class FieldDifferenceCalculator {
             return getCommonSuperclass(c1, new Stack<Class>(), c2, new Stack<Class>());
         }
 
+        //return common superclass, or Object.class if both C1 and C2 are null
         private static Class getCommonSuperclass(Class c1, Stack<Class> classStack1, Class c2, Stack<Class> classStack2) {
             Class result;
             if ( c1 == c2 ) {
@@ -422,7 +423,7 @@ public class FieldDifferenceCalculator {
                 addToStack(classStack2, c2);
                 result = findFirstMatching(classStack1, classStack2);
             }
-            return result;
+            return result == null ? Object.class : result;
         }
 
         //we have 2 stacks of classes with Object.class at the top and then more specific classes
@@ -581,8 +582,8 @@ public class FieldDifferenceCalculator {
         private Map<String, Boolean> ignorePaths = new HashMap<String, Boolean>();
         private List<Pattern> introspectPatterns = new ArrayList<Pattern>();
         private Map<String, Boolean> introspectPaths = new HashMap<String, Boolean>();
-        private Map<Pattern, IntrospectorFactory> patternToIntrospector = new ConcurrentHashMap<Pattern, IntrospectorFactory>();
-        private Map<String, IntrospectorFactory> pathToIntrospector = new ConcurrentHashMap<String, IntrospectorFactory>();
+        private Map<Pattern, FieldIntrospector> patternToIntrospector = new ConcurrentHashMap<Pattern, FieldIntrospector>();
+        private Map<String, FieldIntrospector> pathToIntrospectorMap = new ConcurrentHashMap<String, FieldIntrospector>();
 
         public CalculatorFieldType getCalculatorFieldType(Field f) {
             CalculatorFieldType result;
@@ -598,19 +599,17 @@ public class FieldDifferenceCalculator {
             Boolean result = ignorePaths.get(f.getPath());
             //do we already know wether to ignore this field?, if not see if it matches a pattern
             if ( result == null) {
-                result = isAlwaysIgnoreField(f);
-                if ( ! result ) {
-                    result = searchIgnorePatterns(f, result);
-                }
+                result = searchIgnorePatterns(f);
+                result |= isAlwaysIgnoreField(f);  
                 ignorePaths.put(f.getPath(), result);
             }
             return result;
         }
 
-        private Boolean searchIgnorePatterns(Field f, Boolean result) {
+        private Boolean searchIgnorePatterns(Field f) {
+            boolean result = false;
             for ( Pattern p : ignorePatterns) {
-                result = (p.matcher(f.getPath()).matches());
-                if ( result ) {
+                if ( result = (p.matcher(f.getPath()).matches()) ) {
                     break;
                 }
             }
@@ -626,22 +625,22 @@ public class FieldDifferenceCalculator {
             Boolean result = introspectPaths.get(path);
             //do we already know wether to introspect this field?, if not see if it matches a pattern
             if ( result == null) {
-                result = isAlwaysIntrospectField(f);
-                if ( ! result ) {
-                    result = searchIntrospectPatterns(path, result);
-                }
+                result = searchIntrospectPatterns(path);
+                result |= isAlwaysIntrospectField(f);
                 introspectPaths.put(path, result);
             }
+
             return result;
         }
 
-        private Boolean searchIntrospectPatterns(String path, Boolean result) {
+        private boolean searchIntrospectPatterns(String path) {
+            boolean result = false;
             for ( Pattern p : introspectPatterns) {
                 result = (p.matcher(path).matches());
                 if ( result ) {
                     //is there a specific introspector defined to use?
                     if (patternToIntrospector.containsKey(p)) {
-                        pathToIntrospector.put(path, patternToIntrospector.get(p));
+                        pathToIntrospectorMap.put(path, patternToIntrospector.get(p));
                     }
                     break;
                 }
@@ -661,12 +660,12 @@ public class FieldDifferenceCalculator {
                     SortedSet.class.isAssignableFrom(f.getType()));
         }
 
-        protected IntrospectorFactory getIntrospectorFactory(String fieldPath) {
-            return pathToIntrospector.get(fieldPath);
+        protected FieldIntrospector getIntrospector(String fieldPath) {
+            return pathToIntrospectorMap.get(fieldPath);
         }
 
-        public Comparator getComparator(Field f) {
-            Comparator result = null;
+        public EqualityComparator getComparator(Field f) {
+            EqualityComparator result = null;
             if ( f.getType().isArray()) {
                 return arrayAsListComparator;
             }
@@ -674,22 +673,23 @@ public class FieldDifferenceCalculator {
         }
 
         public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
-            IntrospectorFactory f = getIntrospectorFactory(fieldPath);
-            return f != null ?
-                    f.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2) :
-                    getDefaultFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
+            FieldIntrospector f = getIntrospector(fieldPath);
+            if (f == null) {
+                f = getDefaultFieldIntrospector(commonSuperclass);
+            }
+            return f;
         }
 
-        public FieldIntrospector getDefaultFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+        public FieldIntrospector getDefaultFieldIntrospector(Class commonSuperclass) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
-                return new MapIntrospector(fieldPath, (Map)o1, (Map)o2);
+                return new MapIntrospector();
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
-                return new IterableIntrospector(fieldPath, (Iterable)o1, (Iterable)o2);
+                return new IterableIntrospector();
             } else if (commonSuperclass.isArray()) {
-                return new ArrayIntrospector(fieldPath, o1, o2);
+                return new ArrayIntrospector();
             } else {
                 //an introspector which includes differences for fields which are only present in one of the two input objects
-                return new SubclassFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
+                return new SubclassFieldIntrospector();
             }
         }
 
@@ -709,7 +709,7 @@ public class FieldDifferenceCalculator {
             return this;
         }
 
-        public Config introspectPaths(IntrospectorFactory f, String... paths) {
+        public Config introspectPaths(FieldIntrospector f, String... paths) {
             clearState();
             for (String path : paths) {
                 Pattern p = Pattern.compile(path);
@@ -723,7 +723,7 @@ public class FieldDifferenceCalculator {
         private void clearState() {
             introspectPaths.clear();
             ignorePaths.clear();
-            pathToIntrospector.clear();
+            pathToIntrospectorMap.clear();
         }
 
     }
@@ -732,13 +732,13 @@ public class FieldDifferenceCalculator {
         FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2);
     }
 
-    private static class ArrayAsListComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            int result = 0;
+    private static class ArrayAsListComparator implements EqualityComparator {
+        public boolean isEqual(Object o1, Object o2) {
+            boolean result = true;
             if ( o1 != o2) {
                 List l1 = ClassUtils.getList(o1);
                 List l2 = ClassUtils.getList(o2);
-                result = l1.equals(l2) ? 0 : l1.size() >= l2.size() ? -1 : 1;
+                result = l1.equals(l2);
             }
             return result;
         }
@@ -752,14 +752,18 @@ public class FieldDifferenceCalculator {
         private Class o1;
         private Class o2;
 
-        public SubclassFieldIntrospector(String pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
-            super(pathFromRoot);
+        protected void prepareIntrospector(String pathFromRoot, Class commonSuperclass, Object o1, Object o2) {
             this.commonSuperclass = commonSuperclass;
             this.o1 = o1.getClass();
             this.o2 = o2.getClass();
         }
 
-        public List<Field> getFields() {
+        protected void clearIntrospector() {
+            this.commonSuperclass = null;
+            this.o1 = this.o2 = null;
+        }
+
+        protected List<Field> doGetFields() {
             List<Field> result = new ArrayList<Field>();
             //add fields from shared superclass
             addFieldsRecursivelyUntilReachingClass(result, commonSuperclass, Object.class);
@@ -776,12 +780,15 @@ public class FieldDifferenceCalculator {
     public static class SuperclassFieldIntrospector extends ReflectionFieldIntrospector {
         private Class commonSuperclass;
 
-        public SuperclassFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
-            super(path);
+        protected void prepareIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
             this.commonSuperclass = commonSuperclass;
         }
 
-        public List<Field> getFields() {
+        protected void clearIntrospector() {
+            this.commonSuperclass = null;
+        }
+
+        protected List<Field> doGetFields() {
             List<Field> result = new ArrayList<Field>();
             //add fields from shared superclass
             addFieldsRecursivelyUntilReachingClass(result, commonSuperclass, Object.class);
@@ -799,14 +806,19 @@ public class FieldDifferenceCalculator {
         private Class o1;
         private Class o2;
 
-        public IdenticalClassFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
-            super(path);
+        protected void prepareIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
             this.commonSuperclass = commonSuperclass;
             this.o1 = o1.getClass();
             this.o2 = o2.getClass();
         }
 
-        public List<Field> getFields() {
+        protected void clearIntrospector() {
+            commonSuperclass = null;
+            o1 = null;
+            o2 = null;
+        }
+
+        protected List<Field> doGetFields() {
             List<Field> result = new ArrayList<Field>();
             //only introspect fields if the two objects are exactly the same class type, no subclasses
             if ( o1 == o2 && o1 == commonSuperclass ) {
@@ -817,10 +829,6 @@ public class FieldDifferenceCalculator {
     }
 
      public static abstract class ReflectionFieldIntrospector extends AbstractFieldIntrospector {
-
-         public ReflectionFieldIntrospector(String path) {
-             super(path);
-         }
 
          //find all the fields for this class and superclasses
          protected void addFieldsRecursivelyUntilReachingClass(List<Field> result, Class c, Class endClass) {
@@ -867,40 +875,127 @@ public class FieldDifferenceCalculator {
 
         private String introspectorPath;
 
-        public AbstractFieldIntrospector(String pathFromRoot) {
+        private void setIntrospectorPath(String pathFromRoot) {
             introspectorPath = pathFromRoot.length() > 0 ? pathFromRoot + "." : "";
         }
 
         public String getPath(String fieldName) {
             return introspectorPath + fieldName;
         }
+
+        public final List<Field> getFields(String path, Class commonSuperclass, Object object1, Object object2) {
+            setIntrospectorPath(path);
+            prepareIntrospector(path, commonSuperclass, object1, object2);
+            List<Field> result = doGetFields();
+            clearIntrospector();
+            return result;
+        }
+
+        //called before getFields to allow the introspector to initialize required values
+        protected abstract void prepareIntrospector(String path, Class commonSuperclass, Object object1, Object object2);
+
+        protected abstract List<Field> doGetFields();
+
+        //called after doGetFields so introspector can clear down references to prevent memory leaks
+        protected abstract void clearIntrospector();
     }
 
-    public static class AbstractListIntrospector extends AbstractFieldIntrospector {
+    public abstract static class AbstractListIntrospector extends AbstractFieldIntrospector {
 
+        private boolean useIntelligentMatching = true;
         private List list1;
         private Object o1;
         private List list2;
         private Object o2;
 
-        /**
-         * @param o1, an Iterable instance or an array
-         * @param o2, an Iterable instance or an array
-         */
-        public AbstractListIntrospector(String path, List list1, Object o1, List list2, Object o2 ) {
-            super(path);
-            this.list1 = list1;
-            this.o1 = o1;
-            this.list2 = list2;
-            this.o2 = o2;
+        protected void prepareIntrospector(String path, Class sharedSuperclass, Object object1, Object object2) {
+            this.list1 = getList(object1);
+            this.o1 = object1;
+            this.list2 = getList(object2);
+            this.o2 = object2;
+            if ( useIntelligentMatching ) {
+                applyIntelligentMatching();
+            }
         }
 
-        public List<Field> getFields() {
+        protected abstract List getList(Object object);
+
+        protected void clearIntrospector() {
+            this.list1 = this.list2 = null;
+            this.o1 = this.o2 = null;
+        }
+
+        protected void setUseIntelligentMatching(boolean useIntelligentMatching) {
+            this.useIntelligentMatching = useIntelligentMatching;
+        }
+
+        private void applyIntelligentMatching() {
+            List newListOne = new ArrayList();
+            List newListTwo = new ArrayList();
+
+            LinkedList stackOne = new LinkedList(list1);
+            LinkedList stackTwo = new LinkedList(list2);
+
+            Match m = findNextMatch(stackOne, stackTwo);
+            while (m.isMatched()) {
+                popAndInsertToNextMatchIndex(newListOne, m.listOneIndex, stackOne);
+                addUndefinedValues(newListOne, m.listTwoIndex);
+                addUndefinedValues(newListTwo, m.listOneIndex);
+                popAndInsertToNextMatchIndex(newListTwo, m.listTwoIndex, stackTwo);
+                m = findNextMatch(stackOne, stackTwo);
+            }
+            //now add the reamining tail of both lists, which have no matches
+            newListOne.addAll(stackOne);
+            addUndefinedValues(newListOne, stackTwo.size());
+            addUndefinedValues(newListTwo, stackOne.size());
+            newListTwo.addAll(stackTwo);
+            assert(newListOne.size() == newListTwo.size());
+            list1 = newListOne;
+            list2 = newListTwo;
+        }
+
+        //find the match with the lowest index from either stack
+        private Match findNextMatch(LinkedList stackOne, LinkedList stackTwo) {
+            Match m = new Match();
+            for ( int oneIndex = 0; oneIndex < stackOne.size() && oneIndex < m.getMinIndex(); oneIndex++) {
+                for ( int twoIndex = 0; twoIndex < stackTwo.size() && oneIndex < m.getMinIndex(); twoIndex++) {
+                    if ( isEqual(stackOne.get(oneIndex), stackTwo.get(twoIndex))) {
+                        m.listOneIndex = oneIndex;
+                        m.listTwoIndex = twoIndex;
+                    }
+                }
+            }
+            return m;
+        }
+
+        private boolean isEqual(Object o, Object o1) {
+            return o == o1 || ( o != null && o.equals(o1));
+        }
+
+        private void addUndefinedValues(List list, int numberToAdd) {
+            for ( int count = 0; count < numberToAdd; count++) {
+                list.add(Field.UNDEFINED_FIELD_VALUE);
+            }
+        }
+
+        private void popAndInsertToNextMatchIndex(List newListOne, int toIndex, LinkedList stack) {
+            for ( int loop=0; loop <= toIndex; loop++) {
+                newListOne.add(stack.removeFirst());
+            }
+        }
+
+        protected List<Field> doGetFields() {
             List<Field> result = new ArrayList<Field>();
             int maxSize = Math.max(list1.size(), list2.size());
             for (int loop=0; loop < maxSize; loop++) {
                 final int currentIndex = loop;
                 Field f = new Field() {
+                    //need to copy the field state from the enclosing class, which will have 
+                    //its state cleared during cleanIntrospector()
+                    List list1 = AbstractListIntrospector.this.list1;
+                    List list2 = AbstractListIntrospector.this.list2;
+                    Object o1 = AbstractListIntrospector.this.o1;
+                    Object o2 = AbstractListIntrospector.this.o2;
 
                     public Class<?> getType() {
                         return ClassUtils.getCommonSuperclass(
@@ -940,22 +1035,27 @@ public class FieldDifferenceCalculator {
             }
             return result;
         }
+
+        private class Match {
+            int listOneIndex = Integer.MAX_VALUE;
+            int listTwoIndex = Integer.MAX_VALUE;
+
+            int getMinIndex() { return Math.min(listOneIndex, listTwoIndex); }
+            boolean isMatched() { return listOneIndex != Integer.MAX_VALUE; }
+        }
     }
 
     public static class ArrayIntrospector extends AbstractListIntrospector {
 
-        public ArrayIntrospector(String path, Object o1, Object o2 ) {
-            super(path, ClassUtils.getList(o1), o1, ClassUtils.getList(o2), o2);
+        protected List getList(Object o) {
+            return ClassUtils.getList(o);
         }
     }
 
     public static class IterableIntrospector extends AbstractListIntrospector {
 
-        public IterableIntrospector(String path, Iterable o1, Iterable o2 ) {
-            super(path, getList(o1), o1, getList(o2), o2);
-        }
-
-        private static List getList(Iterable i) {
+        protected List getList(Object o) {
+            Iterable i = (Iterable)o;
             List result;
             if ( i instanceof List && i instanceof RandomAccess ) {
                 result = (List)i;
@@ -963,8 +1063,8 @@ public class FieldDifferenceCalculator {
                 result = new ArrayList((Collection)i);
             } else {
                 result = new ArrayList();
-                for ( Object o: i) {
-                    result.add(o);
+                for ( Object object: i) {
+                    result.add(object);
                 }
             }
             return result;
@@ -981,13 +1081,16 @@ public class FieldDifferenceCalculator {
         private Stack<Class> classStack1 = new Stack<Class>();
         private Stack<Class> classStack2 = new Stack<Class>();
 
-        public MapIntrospector(String path, Map o1, Map o2) {
-            super(path);
-            this.o1 = o1;
-            this.o2 = o2;
+        protected void prepareIntrospector(String path, Class commonSuperclass, Object object1, Object object2) {
+            this.o1 = (Map)object1;
+            this.o2 = (Map)object2;
         }
 
-        public List<Field> getFields() {
+        protected void clearIntrospector() {
+            this.o1 = this.o2 = null;
+        }
+
+        protected List<Field> doGetFields() {
             List<Object> allKeys = new ArrayList<Object>();
             //we want to process fields for the superset of all keys in the maps but provide predictable ordering for
             //SortedMap instances, otherwise testing is hard. We can't guarantee keys from both maps are comparable so
@@ -1000,6 +1103,10 @@ public class FieldDifferenceCalculator {
             for ( final Object key : allKeys) {
                 if ( ! keysProcessed.contains(key)) {
                     fields.add(new Field() {
+                        //need to copy the field state from the enclosing class, which will have
+                        //its state cleared during cleanIntrospector()
+                        Map o1 = MapIntrospector.this.o1;
+                        Map o2 = MapIntrospector.this.o2;
 
                         public Class<?> getType() {
                             return getCommonSuperclass(key);
@@ -1043,7 +1150,7 @@ public class FieldDifferenceCalculator {
         }
 
         private Object doGetValue(Map m, Object key) {
-            return m.containsKey(key) ? m.get(key) : UNDEFINED_FIELD_VALUE;
+            return m.containsKey(key) ? m.get(key) : Field.UNDEFINED_FIELD_VALUE;
         }
     }
 
@@ -1065,7 +1172,7 @@ public class FieldDifferenceCalculator {
          * 1- the object class implements Comparable and compareTo returns zero, or
          * 2- equals() returns true
          */
-        Comparator getComparator(Field f);
+        EqualityComparator getComparator(Field f);
 
 
         /**
@@ -1092,29 +1199,30 @@ public class FieldDifferenceCalculator {
          * Request that the calculator introspects fields with paths matching the path pattern provided 
          * using the supplied introspector factory to create an introspector instance
          */
-        Config introspectPaths(IntrospectorFactory f, String... paths);
+        Config introspectPaths(FieldIntrospector f, String... paths);
     }
 
     /**
-     * FieldIntrospector calculates the fields for an object which is being introspected
+     * FieldIntrospector calculates a list which contains the logical Fields for two objects
+     * which are being introspected. The objects will usually be of the same class type, so will have identical fields,
+     * but in some cases fields may be included in the List which are only defined for one of the two objects.
+     * This may happen, for example, if the two Objects are instances of classes with a shared superclass (so have some
+     * common superclass fields), but the subclasses also define their own fields (so some fields are unique to each object)
      *
-     * The default implementation uses reflection to create a List of Field which represent the java.lang.reflect.Field
-     * in the class hierarchy
-     *
-     * Other implementations may, for example, introspect on Map classes and represent the keys/values
-     * in the map as field instances
+     * The default implementation uses reflection to create a List of logical Fields which represent the java.lang.reflect.Field
+     * in the class hierarchy. Other implementations may, for example, introspect on Map classes and represent the keys/values
+     * in the map as field instances (in which case keys which are not present in both maps will be considered
+     * an 'undefined field' for the other map)
      */
     public static interface FieldIntrospector {
 
-        //a value which should be returned if a field is undefined
-        //for a given object, or a value cannot otherwise be determined
-        Object UNDEFINED_FIELD_VALUE = new Object() {
-            public String toString() {
-                return "Undefined";
-            }
-        };
-
-        List<Field> getFields();
+        /**
+         * @param pathPrefix - the path already parsed which should be used to prefix the field returned by this introspector
+         * @param commonSuperclass - most specific common superclass to the two objects
+         * @param object1 - first object for which we want to get fields
+         * @param object2 - second object for which we want to determine fields
+         */
+        List<Field> getFields(String pathPrefix, Class commonSuperclass, Object object1, Object object2);
     }
 
     /**
@@ -1122,19 +1230,30 @@ public class FieldDifferenceCalculator {
      */
     public static interface Field {
 
+        //a value which should be returned by Field.getValue() if a field is undefined
+        //for a given object, or a value cannot otherwise be determined for some reason
+        Object UNDEFINED_FIELD_VALUE = new Object() {
+            public String toString() {
+                return "Undefined";
+            }
+        };
+
         /**
          * @return class type for this field, which may be a superclass of the actual instance data
          */
         Class<?> getType();
 
         /**
-         * @return value for this field, which should be the class given by getType(), a subclass of getType() or null
+         * Get a value for the object provided
+         * @param o, either the object1 or object2 which was provided to the FieldIntrospector which generated this Field definition
+         * @return a value for this field which may be null or UNDEFINED_FIELD_VALUE if a value cannot be determined for this object
          */
         Object getValue(Object o) throws Exception;
 
         /**
          * The field names should perferably be unique per class, but duplicate names are tolerated
-         * @return Name for this field, used to describe the differences.
+         * (there are cases where a superclass and subclass may have a field with the same name)
+         * @return Name for this field, to be used in the difference descriptions.
          */
         String getName();
 
@@ -1154,5 +1273,12 @@ public class FieldDifferenceCalculator {
         public FieldDiferenceCalculatorException(Throwable e) {
             super(e);
         }
+    }
+
+    /**
+     * A comparator which can be used to determine whether two objects are equal
+     */
+    public static interface EqualityComparator<E> {
+        boolean isEqual(E object1, E object2);
     }
 }

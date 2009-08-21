@@ -63,7 +63,8 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
         f.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
-            "artistNames.0->record1:[Elton John] record2:[Elvis Presley]",
+            "artistNames.0->record1:[Elton John] record2:[Undefined]\n" +
+            "artistNames.1->record1:[Undefined] record2:[Elvis Presley]",
             sb.toString()
         );
 
@@ -73,8 +74,9 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
         f.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
-            "artistNames.0->record1:[Elton John] record2:[Elvis Presley]\n" +
-            "artistNames.1->record1:[Undefined] record2:[Eric Clapton]",
+            "artistNames.0->record1:[Elton John] record2:[Undefined]\n" +
+            "artistNames.1->record1:[Undefined] record2:[Elvis Presley]\n" +
+            "artistNames.2->record1:[Undefined] record2:[Eric Clapton]",
             sb.toString()
         );
 
@@ -184,7 +186,8 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
             "length->record1:[10] record2:[20]\n" +
             "players.guitar->record1:[Eric Clapton] record2:[Mark Knopfler]\n" +
             "stringQuartet.willPlayforFood->record1:[false] record2:[true]\n" +
-            "stringQuartet.violins.1->record1:[Nigel Kennedy] record2:[Heifitz]",
+            "stringQuartet.violins.1->record1:[Nigel Kennedy] record2:[Undefined]\n" +
+            "stringQuartet.violins.2->record1:[Undefined] record2:[Heifitz]",
             sb.toString()
         );
     }
