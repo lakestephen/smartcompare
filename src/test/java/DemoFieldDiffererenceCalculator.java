@@ -179,7 +179,6 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
 
         sb.setLength(0);
         f.printDifferences(recording1, recording2, sb);
-        f.printDifferences(recording1, recording2);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "players.guitar->record1:[Eric Clapton] record2:[Mark Knopfler]\n" +
