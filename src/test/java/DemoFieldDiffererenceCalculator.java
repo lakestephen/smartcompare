@@ -112,9 +112,6 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
         recording2.addPlayer("castanets", "Boris Johnson");
         recording1.addPlayer("tuba", "Screaming Lord Such");
 
-        //tell the difference calculator we want to introspect the map key by key!
-//        f.introspectPaths("players");
-
         sb.setLength(0);
         f.printDifferences(recording1, recording2, sb);
         assertEquals(
@@ -182,6 +179,7 @@ public class DemoFieldDiffererenceCalculator extends TestCase {
 
         sb.setLength(0);
         f.printDifferences(recording1, recording2, sb);
+        f.printDifferences(recording1, recording2);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "players.guitar->record1:[Eric Clapton] record2:[Mark Knopfler]\n" +

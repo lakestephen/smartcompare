@@ -13,22 +13,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * A class which compares two Objects to produce a list of differences.
  * It can compare fields at top level, or introspect further down the object graph 
  *
- * When you create a FieldDifferenceCalculator you pass in a config which defines which fields are considered for the comparison
- * and which fields are introspected further.
+ * When you create a FieldDifferenceCalculator you pass in a config object which defines which fields are
+ * considered for the comparison, which fields to introspect further (walking down the tree of references from the root objects),
+ * and which fields are ignored.
  *
- * The default config compares fields at the top level only (no drill down to introspect further down the object graph)
- * To configure the calculator to introspect further down the graph you have to pass in a Config object,
- * in which you can define for each field:
- * --> whether it should be compared, introspected further, or ignored
- * --> if the field is to be compared, optionally a comparator to handle this
- * The above can be based on the class type, the field name or the path of the field from the comparison root object
+ * A 'Field' does not necessarily imply a field on a class at language level, although the default
+ * introspector does use reflection to find the fields defined by the classes of the objects being compared.
+ * FieldDifferenceCalculator has it's own Field abstraction which allows a list of Fields to be determined in other ways:
+ * For example, the MapIntrospector can be used where the objects being compared are Maps - in this case the fields are
+ * identified by the keys in the Map.
  *
- * A 'Field' does not necessarily imply a field on a class at language level, although the default introspector does use reflection
- * to find the fields defined by the class of the objects being compared.
- *
- * FieldDifferenceCalculator has it's own Field abstraction which makes it possible for introspectors to work at a higher level
- * For example, it is possible for an Introspector to return a list of the values in a Map as Fields, where the fields are
- * identified by the keys in the Map. This allows introspection/comparison of Map instances as part of the graph.
+ * The comparison works in the following way, when compare(o1, o2) is called:
+ * - Obtain a FieldIntrospector for the two objects being compared, using the config provided.
+ * - Get a list of fields from the FieldIntrospector
+ * - For each field, use the config to determine whether to compare it, introspect it or ignore it
+ *     - If we are to compare the field, use the config to see if there is a custom EqualityComparator provided,
+ *       otherwise use Comparable.compareTo or Object.equals() to decide whether there is a difference.
+ *       If there is a difference, add it to the list of differences which is returned
+ *     - If we are to introspect the field, get values for the field from each Object, create a new instance of
+ *       FieldDifferenceCalculator and use it to compare the field values recursively.
  */
 public class FieldDifferenceCalculator {
 
@@ -584,6 +587,11 @@ public class FieldDifferenceCalculator {
         private Map<String, Boolean> introspectPaths = new HashMap<String, Boolean>();
         private Map<Pattern, FieldIntrospector> patternToIntrospector = new ConcurrentHashMap<Pattern, FieldIntrospector>();
         private Map<String, FieldIntrospector> pathToIntrospectorMap = new ConcurrentHashMap<String, FieldIntrospector>();
+        private MapIntrospector mapIntrospector = new MapIntrospector();
+        private IterableIntrospector  iterableIntrospector = new IterableIntrospector();
+        private ArrayIntrospector arrayIntrospector = new ArrayIntrospector();
+        private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
+
 
         public CalculatorFieldType getCalculatorFieldType(Field f) {
             CalculatorFieldType result;
@@ -682,14 +690,14 @@ public class FieldDifferenceCalculator {
 
         public FieldIntrospector getDefaultFieldIntrospector(Class commonSuperclass) {
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
-                return new MapIntrospector();
+                return mapIntrospector;
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
-                return new IterableIntrospector();
+                return iterableIntrospector;
             } else if (commonSuperclass.isArray()) {
-                return new ArrayIntrospector();
+                return arrayIntrospector;
             } else {
                 //an introspector which includes differences for fields which are only present in one of the two input objects
-                return new SubclassFieldIntrospector();
+                return subclassFieldIntrospector;
             }
         }
 
@@ -900,6 +908,14 @@ public class FieldDifferenceCalculator {
         protected abstract void clearIntrospector();
     }
 
+    /**
+     * The AbstractListIntrospector can be used to introspect any classes for which we can obtain an ordered list of fields
+     * The 'intelligent matching' mode (on by default) ignores phantom differences which occur due to extra elements appearing in
+     * one or the other list - without intelligent matching turned on a difference at an early index would cause
+     * every subsequent index in the lists to show a difference, since the comparison is performed index by index.
+     * Intelligent matching used Object.equals() to try to determine which indexes are actually matched in order to flag up the
+     * initial difference alone, and avoid showing phantom differences.
+     */
     public abstract static class AbstractListIntrospector extends AbstractFieldIntrospector {
 
         private boolean useIntelligentMatching = true;
@@ -1186,18 +1202,18 @@ public class FieldDifferenceCalculator {
         FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
 
         /**
-         * Request that the calculator ignores fields with paths matching the path pattern provided
+         * Set the comparison to ignore fields with paths matching the path pattern provided
          */
         Config ignorePaths(String... path);
 
         /**
-         * Request that the calculator introspects fields with paths matching the path pattern provided, using a default introspector
+         * Set the comparison to introspect fields with paths matching the path pattern provided
          */
         Config introspectPaths(String... path);
 
         /**
-         * Request that the calculator introspects fields with paths matching the path pattern provided 
-         * using the supplied introspector factory to create an introspector instance
+         * Request that the comparison introspects fields with paths matching the path pattern provided,
+         * using the supplied introspector
          */
         Config introspectPaths(FieldIntrospector f, String... paths);
     }
@@ -1277,6 +1293,7 @@ public class FieldDifferenceCalculator {
 
     /**
      * A comparator which can be used to determine whether two objects are equal
+     * without relying on Object.equals()
      */
     public static interface EqualityComparator<E> {
         boolean isEqual(E object1, E object2);
