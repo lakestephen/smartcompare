@@ -344,8 +344,12 @@ public class FieldDifferenceCalculator {
      */
     private static class ClassUtils {
 
+        //stacks local to the thread as an optimisation to prevent object cycling by creating many stacks
+        private static ThreadLocal<Stack> classStack1ByThread = new StackThreadLocal();
+        private static ThreadLocal<Stack> classStack2ByThread = new StackThreadLocal();
+
         static List getList(Object array) {
-            List result = null;
+            List result;
             //this is horrible, is there a better way?
             //We could use reflection to create the List but that would be slower.
             if ( array instanceof Object[] ) {
@@ -404,11 +408,6 @@ public class FieldDifferenceCalculator {
         }
 
         static Class getCommonSuperclass(Class c1, Class c2) {
-            return getCommonSuperclass(c1, new Stack<Class>(), c2, new Stack<Class>());
-        }
-
-        //return common superclass, or Object.class if both C1 and C2 are null
-        private static Class getCommonSuperclass(Class c1, Stack<Class> classStack1, Class c2, Stack<Class> classStack2) {
             Class result;
             if ( c1 == c2 ) {
                 result = c1;
@@ -417,14 +416,14 @@ public class FieldDifferenceCalculator {
             } else if (c2 == null) {
                 result = c1;
             } else {
-
-                //the classes of the values in the map with this key differ
-                //find the shared superclass
-                classStack1.clear();
-                classStack2.clear();
+                //the classes differ find the shared superclass
+                Stack classStack1 = classStack1ByThread.get();
+                Stack classStack2 = classStack2ByThread.get();
                 addToStack(classStack1, c1);
                 addToStack(classStack2, c2);
                 result = findFirstMatching(classStack1, classStack2);
+                classStack1.clear();
+                classStack2.clear();
             }
             return result == null ? Object.class : result;
         }
@@ -465,6 +464,12 @@ public class FieldDifferenceCalculator {
                char[].class.equals(type) ||
                short[].class.equals(type) ||
                boolean[].class.equals(type));
+        }
+
+        private static class StackThreadLocal extends ThreadLocal<Stack> {
+            public Stack initialValue() {
+                return new Stack();
+            }
         }
     }
 
@@ -1094,8 +1099,6 @@ public class FieldDifferenceCalculator {
 
         private Map o1;
         private Map o2;
-        private Stack<Class> classStack1 = new Stack<Class>();
-        private Stack<Class> classStack2 = new Stack<Class>();
 
         protected void prepareIntrospector(String path, Class commonSuperclass, Object object1, Object object2) {
             this.o1 = (Map)object1;
@@ -1134,7 +1137,7 @@ public class FieldDifferenceCalculator {
                             //in which case we need to find and return the most specific common superclass.
                             Class c1 = getClass(key, o1);
                             Class c2 = getClass(key, o2);
-                            result = ClassUtils.getCommonSuperclass(c1, classStack1, c2, classStack2);
+                            result = ClassUtils.getCommonSuperclass(c1, c2);
                             return result;
                         }
 
@@ -1167,6 +1170,26 @@ public class FieldDifferenceCalculator {
 
         private Object doGetValue(Map m, Object key) {
             return m.containsKey(key) ? m.get(key) : Field.UNDEFINED_FIELD_VALUE;
+        }
+    }
+
+    public static class SetIntrospector extends AbstractFieldIntrospector {
+
+        private Set o1;
+        private Set o2;
+
+        protected void prepareIntrospector(String path, Class commonSuperclass, Object object1, Object object2) {
+            o1 = (Set)object1;
+            o2 = (Set)object2;
+        }
+
+        protected List<Field> doGetFields() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        protected void clearIntrospector() {
+            o1 = null;
+            o2 = null;
         }
     }
 
