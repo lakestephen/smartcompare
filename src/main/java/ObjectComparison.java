@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A class which compares two Objects to produce a list of differences.
  * It can compare fields at top level, or introspect further down the object graph 
  *
- * When you create a FieldDifferenceCalculator you pass in a config object which defines which fields are
+ * When you create a ObjectComparison instance you pass in a config object which defines which fields are
  * considered for the comparison, which fields to introspect further (walking down the tree of references from the root objects),
  * and which fields are ignored.
  *
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *     - If we are to introspect the field, get values for the field from each Object, create a new instance of
  *       FieldDifferenceCalculator and use it to compare the field values recursively.
  */
-public class FieldDifferenceCalculator {
+public class ObjectComparison {
 
     public static final String INPUT_OBJECT_TEXT = "";
 
@@ -47,23 +47,23 @@ public class FieldDifferenceCalculator {
     private List<Object> visitedNodes2;
     private Config config;
 
-    public FieldDifferenceCalculator() {
+    public ObjectComparison() {
         this(DEFAULT_CONFIG);
     }
 
-    public FieldDifferenceCalculator(Config config) {
+    public ObjectComparison(Config config) {
         this("object1", "object2", config);
     }
 
-    public FieldDifferenceCalculator(String description1, String description2) {
+    public ObjectComparison(String description1, String description2) {
         this(description1, description2, DEFAULT_CONFIG, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
-    public FieldDifferenceCalculator(String description1, String description2, Config config) {
+    public ObjectComparison(String description1, String description2, Config config) {
         this(description1, description2, config, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
-    private FieldDifferenceCalculator(String description1, String description2, Config config, List<String> path, List<Object> visitedNodes1, List<Object> visitedNodes2) {
+    private ObjectComparison(String description1, String description2, Config config, List<String> path, List<Object> visitedNodes1, List<Object> visitedNodes2) {
         this.config = config;
         this.path = path;
         this.description1 = description1;
@@ -81,17 +81,17 @@ public class FieldDifferenceCalculator {
         this.description2 = description2;
     }
 
-    public FieldDifferenceCalculator ignorePaths(String... paths) {
+    public ObjectComparison ignorePaths(String... paths) {
         config.ignorePaths(paths);
         return this;
     }
 
-    public FieldDifferenceCalculator introspectPaths(String... paths) {
+    public ObjectComparison introspectPaths(String... paths) {
         config.introspectPaths(paths);
         return this;
     }
 
-    public FieldDifferenceCalculator introspectPaths(FieldIntrospector f, String... paths) {
+    public ObjectComparison introspectPaths(FieldIntrospector f, String... paths) {
         config.introspectPaths(f, paths);
         return this;
     }
@@ -193,7 +193,7 @@ public class FieldDifferenceCalculator {
         FieldIntrospector i = config.getFieldIntrospector(pathAsString, commonSuperclass, o1, o2);
         List<Field> fields = i.getFields(pathAsString, commonSuperclass, o1, o2);
         for ( Field f : fields) {
-            switch ( config.getCalculatorFieldType(f)) {
+            switch ( config.getComparisonFieldType(f)) {
                 case INTROSPECTION_FIELD :
                     introspectionFields.add(f);
                     break;
@@ -227,7 +227,7 @@ public class FieldDifferenceCalculator {
                     }
                 }
             } catch (Throwable t) {
-                throw new FieldDiferenceCalculatorException(t);
+                throw new ComparisonException(t);
             }
         }
         return result;
@@ -249,7 +249,7 @@ public class FieldDifferenceCalculator {
             newPath.add(f.getName());
 
             List<Difference> result = new ArrayList<Difference>();
-            FieldDifferenceCalculator l = new FieldDifferenceCalculator(
+            ObjectComparison l = new ObjectComparison(
                     description1,
                     description2,
                     config,
@@ -598,12 +598,12 @@ public class FieldDifferenceCalculator {
         private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
         private UnsortedSetIntrospector unsortedSetIntrospector = new UnsortedSetIntrospector();
 
-        public CalculatorFieldType getCalculatorFieldType(Field f) {
-            CalculatorFieldType result;
+        public ComparisonFieldType getComparisonFieldType(Field f) {
+            ComparisonFieldType result;
             if (isIgnoreField(f)) {
-                result = CalculatorFieldType.IGNORE_FIELD;
+                result = ComparisonFieldType.IGNORE_FIELD;
             } else {
-                result = isIntrospectField(f) ? CalculatorFieldType.INTROSPECTION_FIELD : CalculatorFieldType.COMPARISON_FIELD;
+                result = isIntrospectField(f) ? ComparisonFieldType.INTROSPECTION_FIELD : ComparisonFieldType.COMPARISON_FIELD;
             }
             return result;
         }
@@ -1238,17 +1238,17 @@ public class FieldDifferenceCalculator {
     public static interface Config {
 
         /**
-         * @return a type which indicates whether the value of this field should be compared,
-         * whether we should introspect it to drill down further, or ignore it
+         * @return a type which indicates whether the values for this field should be compared,
+         * whether we should introspect the values to drill down further, or ignore them
          */
-        CalculatorFieldType getCalculatorFieldType(Field f);
+        ComparisonFieldType getComparisonFieldType(Field f);
 
         /**
          * @return comparator to use for Field in cases where the fields compared are not equal by reference.
          *
          * If this method returns null, the comparison objects will be considered equal if -->
          * 1- the object class implements Comparable and compareTo returns zero, or
-         * 2- equals() returns true
+         * 2- o1.equals(o2) returns true
          */
         EqualityComparator getComparator(Field f);
 
@@ -1341,14 +1341,14 @@ public class FieldDifferenceCalculator {
         String getPath();
     }
 
-    public enum CalculatorFieldType {
+    public enum ComparisonFieldType {
         COMPARISON_FIELD,
         INTROSPECTION_FIELD,
         IGNORE_FIELD
     }
 
-    private class FieldDiferenceCalculatorException extends RuntimeException {
-        public FieldDiferenceCalculatorException(Throwable e) {
+    private class ComparisonException extends RuntimeException {
+        public ComparisonException(Throwable e) {
             super(e);
         }
     }

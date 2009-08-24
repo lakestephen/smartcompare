@@ -8,14 +8,14 @@ import java.util.*;
  * Date: 30-Jul-2009
  * Time: 15:03:06
  */
-public class DemoFieldDiffererenceCalculator extends TestCase {
+public class DemoObjectComparison extends TestCase {
 
     private StringBuilder sb = new StringBuilder();
-    public FieldDifferenceCalculator f;
+    public ObjectComparison f;
 
     public void setUp() {
         sb.setLength(0);
-        f = new FieldDifferenceCalculator("record1", "record2");
+        f = new ObjectComparison("record1", "record2");
     }
 
     public void testSimpleDifference() {
