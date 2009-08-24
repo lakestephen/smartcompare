@@ -532,6 +532,68 @@ public class TestFieldDifferenceCalculator extends TestCase {
         );
     }
 
+    public void testUnsortedSetIntrospection() {
+        Set<String> s1 = new HashSet<String>();
+        s1.add("test1");
+        s1.add("test4");
+        s1.add("test3");
+        s1.add("test2");
+
+        Set<String> s2 = new HashSet<String>();
+        s2.add("test1");
+        s2.add("test5");
+        s2.add("test3");
+        s2.add("test2");
+
+        t1 = s1; t2 = s2;
+        introspect();
+        checkDifferences(
+            newFieldDifference(
+                "3",
+                "object1:[test4] object2:[Undefined]",
+                "test4",
+                FieldDifferenceCalculator.Field.UNDEFINED_FIELD_VALUE
+            ),
+            newFieldDifference(
+                "4",
+                "object1:[Undefined] object2:[test5]",
+                FieldDifferenceCalculator.Field.UNDEFINED_FIELD_VALUE,
+                "test5"
+            )
+        );
+    }
+
+    public void testSortedSetIntrospection() {
+        Set<String> s1 = new TreeSet<String>();
+        s1.add("test1");
+        s1.add("test4");
+        s1.add("test3");
+        s1.add("test2");
+
+        Set<String> s2 = new TreeSet<String>();
+        s2.add("test1");
+        s2.add("test5");
+        s2.add("test3");
+        s2.add("test2");
+
+        t1 = s1; t2 = s2;
+        introspect();
+        checkDifferences(
+            newFieldDifference(
+                "3",
+                "object1:[test4] object2:[Undefined]",
+                "test4",
+                FieldDifferenceCalculator.Field.UNDEFINED_FIELD_VALUE
+            ),
+            newFieldDifference(
+                "4",
+                "object1:[Undefined] object2:[test5]",
+                FieldDifferenceCalculator.Field.UNDEFINED_FIELD_VALUE,
+                "test5"
+            )
+        );
+    }
+
     public void testArrayIntrospection() {
         t1 = new String[] { "test1", "test2", "test3" };
         t2 = new String[] { "test1", "test3" };

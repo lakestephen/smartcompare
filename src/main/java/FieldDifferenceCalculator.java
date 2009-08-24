@@ -596,7 +596,7 @@ public class FieldDifferenceCalculator {
         private IterableIntrospector  iterableIntrospector = new IterableIntrospector();
         private ArrayIntrospector arrayIntrospector = new ArrayIntrospector();
         private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
-
+        private UnsortedSetIntrospector unsortedSetIntrospector = new UnsortedSetIntrospector();
 
         public CalculatorFieldType getCalculatorFieldType(Field f) {
             CalculatorFieldType result;
@@ -662,15 +662,9 @@ public class FieldDifferenceCalculator {
         }
 
         protected boolean isAlwaysIntrospectField(Field f) {
-            boolean result =
-               ClassUtils.isPrimativeOrStringArray(f.getType()) ||
+            return ClassUtils.isPrimativeOrStringArray(f.getType()) ||
                Map.class.isAssignableFrom(f.getType()) ||
                Iterable.class.isAssignableFrom(f.getType());
-               //Sets are iterable, but only sorted sets can be introspected - for those
-               //the order is defined and we can index the values meaningfully as fields
-               //unsorted sets will be compared, rather than introspected
-               return result && (! Set.class.isAssignableFrom(f.getType()) ||
-                    SortedSet.class.isAssignableFrom(f.getType()));
         }
 
         protected FieldIntrospector getIntrospector(String fieldPath) {
@@ -694,16 +688,20 @@ public class FieldDifferenceCalculator {
         }
 
         public FieldIntrospector getDefaultFieldIntrospector(Class commonSuperclass) {
+            FieldIntrospector result;
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
-                return mapIntrospector;
+                result = mapIntrospector;
+            } else if (Set.class.isAssignableFrom(commonSuperclass)) {
+                result = SortedSet.class.isAssignableFrom(commonSuperclass) ? iterableIntrospector : unsortedSetIntrospector;
             } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
-                return iterableIntrospector;
+                result = iterableIntrospector;
             } else if (commonSuperclass.isArray()) {
-                return arrayIntrospector;
+                result = arrayIntrospector;
             } else {
                 //an introspector which includes differences for fields which are only present in one of the two input objects
-                return subclassFieldIntrospector;
+                result = subclassFieldIntrospector;
             }
+            return result;
         }
 
         public Config ignorePaths(String... paths) {
@@ -1173,23 +1171,64 @@ public class FieldDifferenceCalculator {
         }
     }
 
-    public static class SetIntrospector extends AbstractFieldIntrospector {
+    /**
+     * Convert unsorted sets to lists of objects for comparison
+     * This attempts to align equal objects in the sets so they appear first in the lists,
+     * followed by the unique objects to set 1 and the unique objects to set2
+     *
+     * The exact ordering of fields which results will be non-deterministic, due to the lack of guaranteed ordering
+     * in an unsorted set - but this method should at least enable a sensible comparison in most cases
+     */
+    public static class UnsortedSetIntrospector extends AbstractListIntrospector {
+        Set o1;
+        Set o2;
+        private List l1;
+        private List l2;
 
-        private Set o1;
-        private Set o2;
+        public UnsortedSetIntrospector() {
+            //we're going to order the common (.equals() = true) elements to appear first
+            //then the unique to set 1, then unique to set 2
+            //so the intelligent matching algorithm is redundant here.
+            setUseIntelligentMatching(false);
+        }
 
         protected void prepareIntrospector(String path, Class commonSuperclass, Object object1, Object object2) {
             o1 = (Set)object1;
             o2 = (Set)object2;
+            l1 = new LinkedList();
+            l2 = new LinkedList();
+
+            HashSet commonElements = new HashSet(o1);
+            commonElements.retainAll(o2);
+            for ( Object o : commonElements) {
+                l1.add(o);
+                l2.add(o);
+            }
+
+            HashSet setOneOnly = new HashSet(o1);
+            setOneOnly.removeAll(commonElements);
+            addValueAndUndefinedValue(setOneOnly, l1, l2);
+
+            HashSet setTwoOnly = new HashSet(o2);
+            setTwoOnly.removeAll(commonElements);
+            addValueAndUndefinedValue(setTwoOnly, l2, l1);
+            super.prepareIntrospector(path, commonSuperclass, object1, object2);
         }
 
-        protected List<Field> doGetFields() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        private void addValueAndUndefinedValue(HashSet setOneOnly, List listOne, List listTwo) {
+            for (Object o : setOneOnly) {
+                listOne.add(o);
+                listTwo.add(Field.UNDEFINED_FIELD_VALUE);
+            }
+        }
+
+        protected List getList(Object object) {
+            return object == o1 ? l1 : l2;
         }
 
         protected void clearIntrospector() {
-            o1 = null;
-            o2 = null;
+            o1 = o2 = null;
+            l1 = l2 = null;
         }
     }
 
