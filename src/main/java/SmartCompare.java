@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A class which compares two Objects to produce a list of differences.
  * It can compare fields at top level, or introspect further down the object graph 
  *
- * When you create a ObjectComparison instance you pass in a config object which defines which fields are
+ * When you create a SmartCompare instance you pass in a config object which defines which fields are
  * considered for the comparison, which fields to introspect further (walking down the tree of references from the root objects),
  * and which fields are ignored.
  *
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *     - If we are to introspect the field, get values for the field from each Object, create a new instance of
  *       FieldDifferenceCalculator and use it to compare the field values recursively.
  */
-public class ObjectComparison {
+public class SmartCompare {
 
     public static final String INPUT_OBJECT_TEXT = "";
 
@@ -47,23 +47,23 @@ public class ObjectComparison {
     private List<Object> visitedNodes2;
     private Config config;
 
-    public ObjectComparison() {
+    public SmartCompare() {
         this(DEFAULT_CONFIG);
     }
 
-    public ObjectComparison(Config config) {
+    public SmartCompare(Config config) {
         this("object1", "object2", config);
     }
 
-    public ObjectComparison(String description1, String description2) {
+    public SmartCompare(String description1, String description2) {
         this(description1, description2, DEFAULT_CONFIG, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
-    public ObjectComparison(String description1, String description2, Config config) {
+    public SmartCompare(String description1, String description2, Config config) {
         this(description1, description2, config, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
-    private ObjectComparison(String description1, String description2, Config config, List<String> path, List<Object> visitedNodes1, List<Object> visitedNodes2) {
+    private SmartCompare(String description1, String description2, Config config, List<String> path, List<Object> visitedNodes1, List<Object> visitedNodes2) {
         this.config = config;
         this.path = path;
         this.description1 = description1;
@@ -81,17 +81,17 @@ public class ObjectComparison {
         this.description2 = description2;
     }
 
-    public ObjectComparison ignorePaths(String... paths) {
+    public SmartCompare ignorePaths(String... paths) {
         config.ignorePaths(paths);
         return this;
     }
 
-    public ObjectComparison introspectPaths(String... paths) {
+    public SmartCompare introspectPaths(String... paths) {
         config.introspectPaths(paths);
         return this;
     }
 
-    public ObjectComparison introspectPaths(FieldIntrospector f, String... paths) {
+    public SmartCompare introspectPaths(FieldIntrospector f, String... paths) {
         config.introspectPaths(f, paths);
         return this;
     }
@@ -249,7 +249,7 @@ public class ObjectComparison {
             newPath.add(f.getName());
 
             List<Difference> result = new ArrayList<Difference>();
-            ObjectComparison l = new ObjectComparison(
+            SmartCompare l = new SmartCompare(
                     description1,
                     description2,
                     config,
@@ -598,6 +598,12 @@ public class ObjectComparison {
         private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
         private UnsortedSetIntrospector unsortedSetIntrospector = new UnsortedSetIntrospector();
 
+        public DefaultConfig() {}
+
+        public DefaultConfig(FieldIntrospector rootIntrospector) {
+            pathToIntrospectorMap.put("", rootIntrospector);
+        }
+
         public ComparisonFieldType getComparisonFieldType(Field f) {
             ComparisonFieldType result;
             if (isIgnoreField(f)) {
@@ -723,9 +729,13 @@ public class ObjectComparison {
         public Config introspectPaths(FieldIntrospector f, String... paths) {
             clearState();
             for (String path : paths) {
-                Pattern p = Pattern.compile(path);
-                introspectPatterns.add(p);
-                patternToIntrospector.put(p, f);
+                if ( "".equals(path)) { //user is trying to set introspector for the comparison root
+                    pathToIntrospectorMap.put("", f);
+                } else {
+                    Pattern p = Pattern.compile(path);
+                    introspectPatterns.add(p);
+                    patternToIntrospector.put(p, f);
+                }
             }
             return this;
         }

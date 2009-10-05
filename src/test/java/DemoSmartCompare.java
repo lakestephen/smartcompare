@@ -8,14 +8,14 @@ import java.util.*;
  * Date: 30-Jul-2009
  * Time: 15:03:06
  */
-public class DemoObjectComparison extends TestCase {
+public class DemoSmartCompare extends TestCase {
 
     private StringBuilder sb = new StringBuilder();
-    public ObjectComparison f;
+    public SmartCompare smartCompare;
 
     public void setUp() {
         sb.setLength(0);
-        f = new ObjectComparison("record1", "record2");
+        smartCompare = new SmartCompare("record1", "record2");
     }
 
     public void testSimpleDifference() {
@@ -31,7 +31,7 @@ public class DemoObjectComparison extends TestCase {
         Recording recording1 = new Recording(10);
         Recording recording2 = new Recording(20);
 
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals("length->record1:[10] record2:[20]", sb.toString());
     }
 
@@ -55,12 +55,12 @@ public class DemoObjectComparison extends TestCase {
 
         Recording recording1 = new Recording().setLength(10).setArtistNames("Elton John");
         Recording recording2 = new Recording().setLength(20).setArtistNames("Elton John");
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals("length->record1:[10] record2:[20]", sb.toString());
 
         sb.setLength(0);
         recording2.setArtistNames("Elvis Presley");
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "artistNames.0->record1:[Elton John] record2:[Undefined]\n" +
@@ -71,7 +71,7 @@ public class DemoObjectComparison extends TestCase {
 
         sb.setLength(0);
         recording2.setArtistNames("Elvis Presley", "Eric Clapton");
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "artistNames.0->record1:[Elton John] record2:[Undefined]\n" +
@@ -113,7 +113,7 @@ public class DemoObjectComparison extends TestCase {
         recording1.addPlayer("tuba", "Screaming Lord Such");
 
         sb.setLength(0);
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "players.guitar->record1:[Eric Clapton] record2:[Mark Knopfler]\n" +
@@ -175,10 +175,10 @@ public class DemoObjectComparison extends TestCase {
 
         //tell the difference calculator we want to introspect quartet to pick
         //up the differences by field rather than just compare it
-        f.introspectPaths("stringQuartet");        
+        smartCompare.introspectPaths("stringQuartet");
 
         sb.setLength(0);
-        f.printDifferences(recording1, recording2, sb);
+        smartCompare.printDifferences(recording1, recording2, sb);
         assertEquals(
             "length->record1:[10] record2:[20]\n" +
             "players.guitar->record1:[Eric Clapton] record2:[Mark Knopfler]\n" +
