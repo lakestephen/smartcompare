@@ -139,7 +139,7 @@ public class TestSmartCompare extends TestCase {
         SmartCompare.SuperclassFieldIntrospector introspector = new SmartCompare.SuperclassFieldIntrospector();
 
         SmartCompare.DefaultConfig config = new SmartCompare.DefaultConfig();
-        config.introspectPaths(introspector, "");
+        config.bindIntrospector(introspector, "");
         differences = new SmartCompare(config).getDifferences(t1, t2);
 
         SmartCompare.DefaultConfig config2 = new SmartCompare.DefaultConfig(introspector);
@@ -156,7 +156,7 @@ public class TestSmartCompare extends TestCase {
         t2 = new TestFieldDifferenceBean(10d, "test", child2);
 
         SmartCompare.SuperclassFieldIntrospector introspector = new SmartCompare.SuperclassFieldIntrospector();
-        differences = new SmartCompare().introspectPaths(introspector, "beanField").getDifferences(t1, t2);
+        differences = new SmartCompare().bindIntrospector(introspector, "beanField").getDifferences(t1, t2);
 
         checkDifferences(
             newClassDifference(
@@ -351,7 +351,7 @@ public class TestSmartCompare extends TestCase {
         t1 = map1;
         t2 = map2;
 
-        differences = new SmartCompare().introspectPaths(new SmartCompare.SuperclassFieldIntrospector(), "2").getDifferences(t1, t2);
+        differences = new SmartCompare().bindIntrospector(new SmartCompare.SuperclassFieldIntrospector(), "2").getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -516,7 +516,7 @@ public class TestSmartCompare extends TestCase {
                 setUseIntelligentMatching(false);
             }
         }
-        differences = new SmartCompare().introspectPaths(new IntelligentMatchIntrospector(), "iterableField").getDifferences(t1, t2);
+        differences = new SmartCompare().bindIntrospector(new IntelligentMatchIntrospector(), "iterableField").getDifferences(t1, t2);
 
         checkDifferences(
             newValueDifference(
