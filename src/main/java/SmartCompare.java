@@ -9,28 +9,41 @@ import java.util.regex.Pattern;
  * Date: 14-Jul-2009
  * Time: 13:38:06
  *
- * A class which compares two Objects to produce a list of differences.
- * It can compare fields at top level, or introspect further down the object graph 
+ * SmartCompare is a class which compares two Objects to produce a list of differences.
+ * SmartCompare uses an introspector to find a list of Fields to compare.
  *
- * When you create a SmartCompare instance you pass in a config object which defines which fields are
- * considered for the comparison, which fields to introspect further (walking down the tree of references from the root objects),
- * and which fields are ignored.
+ * By default, each field identified for the objects has its value compared.
+ * You can also specify that a field should be ignored, or its values should be introspected further
+ * (thereby walking down the reference graph from the root objects).
  *
- * A 'Field' does not necessarily imply a field on a class at language level, although the default
- * introspector does use reflection to find the fields defined by the classes of the objects being compared.
- * FieldDifferenceCalculator has it's own Field abstraction which allows a list of Fields to be determined in other ways:
- * For example, the MapIntrospector can be used where the objects being compared are Maps - in this case the fields are
- * identified by the keys in the Map.
+ * You can configure the behaviour based on the path through the reference graph, where each token is
+ * a field name. You can set rules which match paths using regular expressions.
  *
- * The comparison works in the following way, when compare(o1, o2) is called:
+ * eg. given two objects of the following class Category, the following comparison would find differences
+ * in category 'name' up the category hierarchy, but would ignore differences in 'priority'
+ * class Category {
+ *   String name;
+ *   int priority;
+ *   Category parent;
+ * }
+ * SmartCompare s = new SmartCompare().introspectPaths(".*parent").ignorePaths(".*priority");
+ * s.printDifferences();
+ *
+ * The meaning of 'Field' is flexible - a 'Field' does not necessarily imply a field on a class
+ * at language level, although the default FieldIntrospector does use reflection to find the fields defined by the
+ * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
+ * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
+ * being compared are Maps - in this case the fields are identified by the keys in the Map.
+ *
+ * The comparison works in the following way, when getDifferences(o1, o2) is called:
  * - Obtain a FieldIntrospector for the two objects being compared, using the config provided.
  * - Get a list of fields from the FieldIntrospector
- * - For each field, use the config to determine whether to compare it, introspect it or ignore it
- *     - If we are to compare the field, use the config to see if there is a custom EqualityComparator provided,
+ * - For each field, use the config to determine whether to compare it, ignore it, or introspect it
+ *     - If we are to compare the field, use the config to see if there is a custom FieldComparator provided,
  *       otherwise use Comparable.compareTo or Object.equals() to decide whether there is a difference.
  *       If there is a difference, add it to the list of differences which is returned
  *     - If we are to introspect the field, get values for the field from each Object, create a new instance of
- *       FieldDifferenceCalculator and use it to compare the field values recursively.
+ *       SmartCompare and use it to compare the field values recursively.
  */
 public class SmartCompare {
 
