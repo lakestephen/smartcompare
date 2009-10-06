@@ -160,9 +160,9 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test", child1);
         t2 = new TestFieldDifferenceBean(10d, "test", child2);
 
-        SmartCompare.DefaultConfig config = new SmartCompare.DefaultConfig();
-        config.introspectPaths(new SmartCompare.SuperclassFieldIntrospector(), "beanField");
-        differences = new SmartCompare(config).getDifferences(t1, t2);
+        SmartCompare.SuperclassFieldIntrospector introspector = new SmartCompare.SuperclassFieldIntrospector();
+        differences = new SmartCompare().introspectPaths(introspector, "beanField").getDifferences(t1, t2);
+
         checkDifferences(
             newClassDifference(
                 "beanField",
@@ -172,22 +172,14 @@ public class TestSmartCompare extends TestCase {
         );
     }
 
-    public void testIsComparisonField() {
+    public void testIgnorePaths() {
         t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
         t2 = new TestFieldDifferenceBean(10d, "test", Color.BLACK);
 
-        //this config suppresses comparison for Color fields so we should get no differences
-        introspect(new SmartCompare.DefaultConfig() {
-            public SmartCompare.ComparisonFieldType getComparisonFieldType(SmartCompare.Field f) {
-                return f.getType() == Color.class ?
-                        SmartCompare.ComparisonFieldType.IGNORE_FIELD :
-                        super.getComparisonFieldType(f);
-            }
-
-        });
+        differences = new SmartCompare().ignorePaths("colorField").getDifferences(t1, t2);
         checkDifferences();
 
-        introspect(defaultConfig);
+        differences = new SmartCompare().getDifferences(t1, t2);
         //now the color difference should be detected
         checkDifferences(
             newValueDifference(
@@ -203,7 +195,7 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(9d, "test");
 
-        introspect(defaultConfig);
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "doubleField",
@@ -213,13 +205,16 @@ public class TestSmartCompare extends TestCase {
             )
         );
 
+        differences = new SmartCompare().ignorePaths("colorField").getDifferences(t1, t2);
+
+
         //now use a comparator which ignores small differences in doubles
         introspect(new SmartCompare.DefaultConfig() {
-            public SmartCompare.EqualityComparator getComparator(SmartCompare.Field f) {
-                SmartCompare.EqualityComparator result = null;
+            public SmartCompare.FieldComparator getComparator(SmartCompare.Field f) {
+                SmartCompare.FieldComparator result = null;
                 if ( f.getType().getName().equals("double")) {
-                    return new SmartCompare.EqualityComparator<Double>() {
-                        public boolean isEqual(Double o1, Double o2) {
+                    return new SmartCompare.FieldComparator<Double>() {
+                        public boolean isEqual(SmartCompare.Field f, Double o1, Double o2) {
                             return Math.abs(o1-o2) < 2;
                         }
                     };
@@ -477,9 +472,9 @@ public class TestSmartCompare extends TestCase {
         expectedPaths.add("beanField.beanField");
 
         class FieldPathCheckingConfig extends BeanFieldIntrospectingConfig {
-            public SmartCompare.ComparisonFieldType getComparisonFieldType(SmartCompare.Field f) {
+            public SmartCompare.FieldType getType(SmartCompare.Field f) {
                 expectedPaths.remove(f.getPath());
-                return super.getComparisonFieldType(f);
+                return super.getType(f);
             }
         }
         introspect(new FieldPathCheckingConfig());
@@ -867,10 +862,10 @@ public class TestSmartCompare extends TestCase {
 
     private static class BeanFieldIntrospectingConfig extends SmartCompare.DefaultConfig {
 
-        public SmartCompare.ComparisonFieldType getComparisonFieldType(SmartCompare.Field f) {
-            SmartCompare.ComparisonFieldType result = super.getComparisonFieldType(f);
+        public SmartCompare.FieldType getType(SmartCompare.Field f) {
+            SmartCompare.FieldType result = super.getType(f);
             if ( f.getType() == TestFieldDifferenceBean.class ) {
-                result = SmartCompare.ComparisonFieldType.INTROSPECTION_FIELD;
+                result = SmartCompare.FieldType.INTROSPECTION;
             }
             return result;
         }

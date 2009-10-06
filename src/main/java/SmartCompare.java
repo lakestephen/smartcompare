@@ -36,9 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SmartCompare {
 
     public static final String INPUT_OBJECT_TEXT = "";
-
-    private static Config DEFAULT_CONFIG = new DefaultConfig();
-
     private List<String> path;
     private String pathAsString;
     private volatile String description1;
@@ -48,7 +45,7 @@ public class SmartCompare {
     private Config config;
 
     public SmartCompare() {
-        this(DEFAULT_CONFIG);
+        this(new DefaultConfig());
     }
 
     public SmartCompare(Config config) {
@@ -56,7 +53,7 @@ public class SmartCompare {
     }
 
     public SmartCompare(String description1, String description2) {
-        this(description1, description2, DEFAULT_CONFIG, Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
+        this(description1, description2, new DefaultConfig(), Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
     public SmartCompare(String description1, String description2, Config config) {
@@ -81,18 +78,23 @@ public class SmartCompare {
         this.description2 = description2;
     }
 
-    public SmartCompare ignorePaths(String... paths) {
-        config.ignorePaths(paths);
+    public SmartCompare ignorePaths(String... pathPatterns) {
+        config.ignorePaths(pathPatterns);
         return this;
     }
 
-    public SmartCompare introspectPaths(String... paths) {
-        config.introspectPaths(paths);
+    public SmartCompare introspectPaths(String... pathPatterns) {
+        config.introspectPaths(pathPatterns);
         return this;
     }
 
-    public SmartCompare introspectPaths(FieldIntrospector f, String... paths) {
-        config.introspectPaths(f, paths);
+    public SmartCompare introspectPaths(FieldIntrospector f, String... pathPatterns) {
+        config.introspectPaths(f, pathPatterns);
+        return this;
+    }
+
+    public SmartCompare bindComparator(FieldComparator c, String... pathPatterns) {
+        config.bindComparator(c, pathPatterns);
         return this;
     }
 
@@ -193,11 +195,11 @@ public class SmartCompare {
         FieldIntrospector i = config.getFieldIntrospector(pathAsString, commonSuperclass, o1, o2);
         List<Field> fields = i.getFields(pathAsString, commonSuperclass, o1, o2);
         for ( Field f : fields) {
-            switch ( config.getComparisonFieldType(f)) {
-                case INTROSPECTION_FIELD :
+            switch ( config.getType(f)) {
+                case INTROSPECTION:
                     introspectionFields.add(f);
                     break;
-                case COMPARISON_FIELD:
+                case COMPARISON:
                     comparisonFields.add(f);
                     break;
             }
@@ -284,9 +286,9 @@ public class SmartCompare {
 
         private Difference getFieldDifference(Field f, Object fieldValue1, Object fieldValue2) {
             Difference fieldDifference;
-            EqualityComparator c = config.getComparator(f);
+            FieldComparator c = config.getComparator(f);
             if ( c != null ) {
-                boolean isEqual = c.isEqual(fieldValue1, fieldValue2);
+                boolean isEqual = c.isEqual(f, fieldValue1, fieldValue2);
                 fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, isEqual);
             } else if ( fieldValue1 instanceof Comparable ) {
                 int comparison = ((Comparable)fieldValue1).compareTo(fieldValue2);
@@ -588,15 +590,21 @@ public class SmartCompare {
         private static final ArrayAsListComparator arrayAsListComparator = new ArrayAsListComparator();
         private List<Pattern> ignorePatterns = new ArrayList<Pattern>();
         private Map<String, Boolean> ignorePaths = new HashMap<String, Boolean>();
+
         private List<Pattern> introspectPatterns = new ArrayList<Pattern>();
-        private Map<String, Boolean> introspectPaths = new HashMap<String, Boolean>();
-        private Map<Pattern, FieldIntrospector> patternToIntrospector = new ConcurrentHashMap<Pattern, FieldIntrospector>();
-        private Map<String, FieldIntrospector> pathToIntrospectorMap = new ConcurrentHashMap<String, FieldIntrospector>();
+        private Map<Pattern, FieldIntrospector> patternToIntrospector = new HashMap<Pattern, FieldIntrospector>();
+        private Map<String, FieldIntrospector> pathToIntrospectorMap = new HashMap<String, FieldIntrospector>();
+
+        private Map<Pattern, FieldComparator> patternToComparatorMap = new HashMap<Pattern, FieldComparator>();
+        private Map<String, FieldComparator> pathToComparatorMap = new HashMap<String, FieldComparator>();
+
         private MapIntrospector mapIntrospector = new MapIntrospector();
         private IterableIntrospector  iterableIntrospector = new IterableIntrospector();
         private ArrayIntrospector arrayIntrospector = new ArrayIntrospector();
         private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
         private UnsortedSetIntrospector unsortedSetIntrospector = new UnsortedSetIntrospector();
+        private FieldIntrospector DO_NOT_INTROSPECT = new DummyIntrospector("Do Not Introspect");
+        private FieldIntrospector USE_DEFAULT_INTROSPECTOR = new DummyIntrospector("Use Default Introspector");
 
         public DefaultConfig() {}
 
@@ -604,12 +612,12 @@ public class SmartCompare {
             pathToIntrospectorMap.put("", rootIntrospector);
         }
 
-        public ComparisonFieldType getComparisonFieldType(Field f) {
-            ComparisonFieldType result;
+        public FieldType getType(Field f) {
+            FieldType result;
             if (isIgnoreField(f)) {
-                result = ComparisonFieldType.IGNORE_FIELD;
+                result = FieldType.IGNORE;
             } else {
-                result = isIntrospectField(f) ? ComparisonFieldType.INTROSPECTION_FIELD : ComparisonFieldType.COMPARISON_FIELD;
+                result = isIntrospectField(f) ? FieldType.INTROSPECTION : FieldType.COMPARISON;
             }
             return result;
         }
@@ -619,7 +627,6 @@ public class SmartCompare {
             //do we already know wether to ignore this field?, if not see if it matches a pattern
             if ( result == null) {
                 result = searchIgnorePatterns(f);
-                result |= isAlwaysIgnoreField(f);  
                 ignorePaths.put(f.getPath(), result);
             }
             return result;
@@ -635,31 +642,29 @@ public class SmartCompare {
             return result;
         }
 
-        protected boolean isAlwaysIgnoreField(Field f) {
-            return false;
+        private boolean isIntrospectField(Field f) {
+            FieldIntrospector result = getIntrospectorForField(f);
+            return result != DO_NOT_INTROSPECT;
         }
 
-        protected boolean isIntrospectField(Field f) {
-            String path = f.getPath();
-            Boolean result = introspectPaths.get(path);
-            //do we already know wether to introspect this field?, if not see if it matches a pattern
+        protected FieldIntrospector getIntrospectorForField(Field f) {
+            FieldIntrospector result = pathToIntrospectorMap.get(f.getPath());
             if ( result == null) {
-                result = searchIntrospectPatterns(path);
-                result |= isAlwaysIntrospectField(f);
-                introspectPaths.put(path, result);
+                result = findInstrospectorFromPatterns(f);
+                pathToIntrospectorMap.put(f.getPath(), result);
             }
-
             return result;
         }
 
-        private boolean searchIntrospectPatterns(String path) {
-            boolean result = false;
+        private FieldIntrospector findInstrospectorFromPatterns(Field f) {
+            FieldIntrospector result = isIntrospectByDefault(f) ? USE_DEFAULT_INTROSPECTOR : DO_NOT_INTROSPECT;
             for ( Pattern p : introspectPatterns) {
-                result = (p.matcher(path).matches());
-                if ( result ) {
+                if ( p.matcher(f.getPath()).matches() ) {
                     //is there a specific introspector defined to use?
                     if (patternToIntrospector.containsKey(p)) {
-                        pathToIntrospectorMap.put(path, patternToIntrospector.get(p));
+                       result = patternToIntrospector.get(p);
+                    } else {
+                       result = USE_DEFAULT_INTROSPECTOR;
                     }
                     break;
                 }
@@ -667,18 +672,29 @@ public class SmartCompare {
             return result;
         }
 
-        protected boolean isAlwaysIntrospectField(Field f) {
+        protected boolean isIntrospectByDefault(Field f) {
             return ClassUtils.isPrimativeOrStringArray(f.getType()) ||
                Map.class.isAssignableFrom(f.getType()) ||
                Iterable.class.isAssignableFrom(f.getType());
         }
 
-        protected FieldIntrospector getIntrospector(String fieldPath) {
-            return pathToIntrospectorMap.get(fieldPath);
+        public FieldComparator getComparator(Field f) {
+            FieldComparator result = pathToComparatorMap.get(f.getPath());
+            if ( result == null) {
+                result = getDefaultComparator(f);
+                for ( Pattern p : patternToComparatorMap.keySet()) {
+                    if ( p.matcher(f.getPath()).matches() ) {
+                        result = patternToComparatorMap.get(p);
+                        break;
+                    }
+                }
+                pathToComparatorMap.put(f.getPath(), result);
+            }
+            return result;
         }
 
-        public EqualityComparator getComparator(Field f) {
-            EqualityComparator result = null;
+        private FieldComparator getDefaultComparator(Field f) {
+            FieldComparator result = null;
             if ( f.getType().isArray()) {
                 return arrayAsListComparator;
             }
@@ -686,11 +702,18 @@ public class SmartCompare {
         }
 
         public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
-            FieldIntrospector f = getIntrospector(fieldPath);
-            if (f == null) {
+            FieldIntrospector f = doGetIntrospector(fieldPath, commonSuperclass, o1, o2);
+            //If the user has overriden the doGetIntrospector() f may be null, DO_NOT_INTROSPECT. In this case use the default introspector
+            if (f == USE_DEFAULT_INTROSPECTOR || f == null || f == DO_NOT_INTROSPECT) {
                 f = getDefaultFieldIntrospector(commonSuperclass);
+                pathToIntrospectorMap.put(fieldPath, f);
             }
             return f;
+        }
+
+        //can be overriden by subclasses
+        protected FieldIntrospector doGetIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
+            return pathToIntrospectorMap.get(fieldPath);
         }
 
         public FieldIntrospector getDefaultFieldIntrospector(Class commonSuperclass) {
@@ -739,12 +762,36 @@ public class SmartCompare {
             }
             return this;
         }
-        
-        //ignore patterns are changing, clear our precomputed field maps
+
+        public Config bindComparator(FieldComparator c, String... pathPattern) {
+            clearState();
+            for ( String pattern : pathPattern) {
+                patternToComparatorMap.put(Pattern.compile(pattern), c);
+            }
+            return this;
+        }
+
+        //patterns are changing, clear our precomputed path maps
         private void clearState() {
-            introspectPaths.clear();
             ignorePaths.clear();
             pathToIntrospectorMap.clear();
+            pathToComparatorMap.clear();
+        }
+
+        private class DummyIntrospector implements FieldIntrospector {
+            private String name;
+
+            public DummyIntrospector(String name) {
+                this.name = name;
+            }
+
+            public List<Field> getFields(String pathPrefix, Class commonSuperclass, Object object1, Object object2) {
+                return null;
+            }
+
+            public String toString() {
+                return name;
+            }
         }
 
     }
@@ -753,8 +800,8 @@ public class SmartCompare {
         FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2);
     }
 
-    private static class ArrayAsListComparator implements EqualityComparator {
-        public boolean isEqual(Object o1, Object o2) {
+    private static class ArrayAsListComparator implements FieldComparator {
+        public boolean isEqual(Field f, Object o1, Object o2) {
             boolean result = true;
             if ( o1 != o2) {
                 List l1 = ClassUtils.getList(o1);
@@ -1249,45 +1296,50 @@ public class SmartCompare {
 
         /**
          * @return a type which indicates whether the values for this field should be compared,
-         * whether we should introspect the values to drill down further, or ignore them
+         * whether we should introspect the values to drill down the bean graph further, or ignore them
          */
-        ComparisonFieldType getComparisonFieldType(Field f);
+        FieldType getType(Field f);
 
         /**
+         * This method is called to obtain an EqualityComparator in cases were a FieldType is FieldType.COMPARISON
          * @return comparator to use for Field in cases where the fields compared are not equal by reference.
          *
          * If this method returns null, the comparison objects will be considered equal if -->
          * 1- the object class implements Comparable and compareTo returns zero, or
          * 2- o1.equals(o2) returns true
          */
-        EqualityComparator getComparator(Field f);
+        FieldComparator getComparator(Field f);
 
 
         /**
-         * @return an introspector which is responsible for extracting field details for the introspection objects,
-         * - these objects are the values for a Field for which getCalculatorFieldType() has returned INTROSPECTION_FIELD
-         * each object will either have class type commonSuperclass, or be an instance of one of commonSuperclass' subclasses.
-         *
-         * There are no fixed rules as to how an Introspector should generate a list of Fields.
-         * Introspectors may either handle subclasses, or ignore them
+         * @return an introspector which is responsible for determining a list of Fields given two objects for introspection.
+         * commonSuperclass is the most specific superclass in common (which may be Object.class)
          */
         FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
 
-        /**
-         * Set the comparison to ignore fields with paths matching the path pattern provided
-         */
-        Config ignorePaths(String... path);
 
         /**
-         * Set the comparison to introspect fields with paths matching the path pattern provided
+         * ignore fields with paths matching pathPattern
          */
-        Config introspectPaths(String... path);
+        Config ignorePaths(String... pathPattern);
 
         /**
-         * Request that the comparison introspects fields with paths matching the path pattern provided,
-         * using the supplied introspector
+         * introspect fields with paths matching pathPattern, provided they do not match an ignore path pattern
          */
-        Config introspectPaths(FieldIntrospector f, String... paths);
+        Config introspectPaths(String... pathPattern);
+
+        /**
+         * introspect fields with paths matching pathPattern using the supplied introspector, provided they do not
+         * match an ignore path pattern
+         */
+        Config introspectPaths(FieldIntrospector f, String... pathPattern);
+
+
+        /**
+         * Use the supplied comparator for paths matching pathPattern, provided they do not match an ignore path
+         * pattern or an introspection pattern
+         */
+        Config bindComparator(FieldComparator c, String... pathPattern);
     }
 
     /**
@@ -1351,10 +1403,10 @@ public class SmartCompare {
         String getPath();
     }
 
-    public enum ComparisonFieldType {
-        COMPARISON_FIELD,
-        INTROSPECTION_FIELD,
-        IGNORE_FIELD
+    public enum FieldType {
+        COMPARISON,
+        INTROSPECTION,
+        IGNORE
     }
 
     private class ComparisonException extends RuntimeException {
@@ -1364,10 +1416,10 @@ public class SmartCompare {
     }
 
     /**
-     * A comparator which can be used to determine whether two objects are equal
+     * A comparator which can be used to determine whether two field values are equal
      * without relying on Object.equals()
      */
-    public static interface EqualityComparator<E> {
-        boolean isEqual(E object1, E object2);
+    public static interface FieldComparator<E> {
+        boolean isEqual(Field field, E object1, E object2);
     }
 }
