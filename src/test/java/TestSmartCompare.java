@@ -17,11 +17,6 @@ public class TestSmartCompare extends TestCase {
     public Object t1;
     public Object t2;
 
-    private final BeanFieldIntrospectingConfig beanInstrospectingConfig = new BeanFieldIntrospectingConfig();
-    private final SmartCompare.DefaultConfig defaultConfig = new SmartCompare.DefaultConfig();
-    private final SubclassIntrospectingConfig subclassConfig = new SubclassIntrospectingConfig();
-    private final SuperclassIntrospectingConfig superclassConfig = new SuperclassIntrospectingConfig();
-
     public void testDefaultComparisonFields() {
         t1 = new TestFieldDifferenceBean(10d, "test");
         t2 = new TestFieldDifferenceBean(10d, "wibble");
@@ -205,23 +200,13 @@ public class TestSmartCompare extends TestCase {
             )
         );
 
-        differences = new SmartCompare().ignorePaths("colorField").getDifferences(t1, t2);
+        class DoubleComparator implements SmartCompare.FieldComparator<Double> {
+            public boolean isEqual(SmartCompare.Field f, Double o1, Double o2) {
+                return Math.abs(o1-o2) < 2;
+            }
+        }
 
-
-        //now use a comparator which ignores small differences in doubles
-        introspect(new SmartCompare.DefaultConfig() {
-            public SmartCompare.FieldComparator getComparator(SmartCompare.Field f) {
-                SmartCompare.FieldComparator result = null;
-                if ( f.getType().getName().equals("double")) {
-                    return new SmartCompare.FieldComparator<Double>() {
-                        public boolean isEqual(SmartCompare.Field f, Double o1, Double o2) {
-                            return Math.abs(o1-o2) < 2;
-                        }
-                    };
-                }
-                return result;
-                }
-            });
+        differences = new SmartCompare().bindComparator(new DoubleComparator(), "doubleField").getDifferences(t1, t2);
         checkDifferences();
     }
 
@@ -232,7 +217,7 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestFieldDifferenceBean(9d, "test", child1);
         t2 = new TestFieldDifferenceBean(9d, "test", child2);
 
-        introspect(beanInstrospectingConfig);
+        differences = new SmartCompare().introspectPaths("beanField").getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "stringField",
@@ -245,7 +230,7 @@ public class TestSmartCompare extends TestCase {
 
         t1 = new TestFieldDifferenceBean(9d, "test", child1);
         t2 = new TestFieldDifferenceBean(9d, "test", child1);
-        introspect(beanInstrospectingConfig);
+        differences = new SmartCompare().introspectPaths("beanField").getDifferences(t1, t2);
         checkDifferences();
     }
 
@@ -253,7 +238,7 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestBeanSubclass1(10d, "test", 10, null);
         t2 = new TestBeanSubclass1(10d, "test2", 100, null);
 
-        introspect(defaultConfig);
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "intField",
@@ -283,7 +268,7 @@ public class TestSmartCompare extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -301,7 +286,7 @@ public class TestSmartCompare extends TestCase {
 
         t1 = new TestMapBean(map1);
         t2 = new TestMapBean(map2);
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -320,7 +305,7 @@ public class TestSmartCompare extends TestCase {
         );
 
         map2.remove("key3");
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -365,7 +350,8 @@ public class TestSmartCompare extends TestCase {
 
         t1 = map1;
         t2 = map2;
-        introspect(superclassConfig);
+
+        differences = new SmartCompare().introspectPaths(new SmartCompare.SuperclassFieldIntrospector(), "2").getDifferences(t1, t2);
         checkDifferences(
             newValueDifference(
                 "key1",
@@ -373,7 +359,6 @@ public class TestSmartCompare extends TestCase {
                 "test",
                 "wibble"
             ),
-            //test beans are introspection types, which means we try to introspect the field values
             //when we try to introspect the values we find they are different class types, so we get a class type difference
             //for the '2' field
             newClassDifference(
@@ -389,7 +374,8 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestBeanSubclass1(10d, "test", 100, null);
         t2 = new TestBeanSubclass2(10d, "test2", 10, null);
 
-        introspect(subclassConfig);
+        //subclass introspection is the default type so need to set an introspector here
+        differences = new SmartCompare().getDifferences(t1, t2);
 
         //the int fields are on the subclass, so are considered different fields for analysis even though they have
         //the same fieldName
@@ -439,7 +425,8 @@ public class TestSmartCompare extends TestCase {
         t1 = new TestBeanSubclass1(10d, "test", 100, null);
         t2 = new TestBeanSubclass2(10d, "test2", 10, null);
 
-        introspect(superclassConfig);
+        SmartCompare.FieldIntrospector introspector = new SmartCompare.SuperclassFieldIntrospector();
+        differences = new SmartCompare(introspector).getDifferences(t1, t2);
 
         //the int fields are on the subclass, so are considered different fields for analysis even though they have
         //the same fieldName
@@ -477,14 +464,14 @@ public class TestSmartCompare extends TestCase {
                 return super.getType(f);
             }
         }
-        introspect(new FieldPathCheckingConfig());
+        differences = new SmartCompare(new FieldPathCheckingConfig()).getDifferences(t1, t2);
         assertEquals("paths correct", 0, expectedPaths.size());
     }
 
     public void testIterableIntrospection() {
         t1 = new TestIterableBean(Arrays.asList("item1", "item2", "item3", "item4"));
         t2 = new TestIterableBean(Arrays.asList("item1", "item3", "item4"));
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
 
         checkDifferences(
             newFieldDifference(
@@ -497,7 +484,7 @@ public class TestSmartCompare extends TestCase {
 
         t1 = new TestIterableBean(Arrays.asList("item1", "item2"));
         t2 = new TestIterableBean(Arrays.asList("item2", null, "wibble"));
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
 
         checkDifferences(
             newFieldDifference(
@@ -524,14 +511,13 @@ public class TestSmartCompare extends TestCase {
     public void testIterableIntrospectionWithoutIntelligentMatching() {
         t1 = new TestIterableBean(Arrays.asList("item1", "item2", "test", "wibble"));
         t2 = new TestIterableBean(Arrays.asList("item1", null, "wibble"));
-        introspect(new SmartCompare.DefaultConfig() {{
-                introspectPaths(
-                    new SmartCompare.IterableIntrospector() {{
-                        setUseIntelligentMatching(false);
-                    }
-                }, "iterableField");
+
+        class IntelligentMatchIntrospector extends SmartCompare.IterableIntrospector {{
+                setUseIntelligentMatching(false);
             }
-        });
+        }
+        differences = new SmartCompare().introspectPaths(new IntelligentMatchIntrospector(), "iterableField").getDifferences(t1, t2);
+
         checkDifferences(
             newValueDifference(
                 "iterableField.1",
@@ -568,7 +554,7 @@ public class TestSmartCompare extends TestCase {
         s2.add("test2");
 
         t1 = s1; t2 = s2;
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newFieldDifference(
                 "3",
@@ -599,7 +585,7 @@ public class TestSmartCompare extends TestCase {
         s2.add("test2");
 
         t1 = s1; t2 = s2;
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newFieldDifference(
                 "3",
@@ -620,7 +606,7 @@ public class TestSmartCompare extends TestCase {
         t1 = new String[] { "test1", "test2", "test3" };
         t2 = new String[] { "test1", "test3" };
 
-        doComparison();
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences(
             newFieldDifference(
                 "1",
@@ -641,11 +627,11 @@ public class TestSmartCompare extends TestCase {
         this.t1 = t1;
         this.t2 = t2;
 
-        introspect(defaultConfig);
+        differences = new SmartCompare().getDifferences(t1, t2);
         checkDifferences();
 
         t2.floatField = new float[] { 1, 2 };
-        introspect(defaultConfig);
+        differences = new SmartCompare().getDifferences(t1, t2);
         assertEquals(1, differences.size());
         assertEquals(3.0f, differences.get(0).getFieldValue1());
     }
@@ -657,7 +643,7 @@ public class TestSmartCompare extends TestCase {
         this.t1 = t1;
 
         t1.beanField = t1;
-        introspect(beanInstrospectingConfig);
+        differences = new SmartCompare().introspectPaths(".*beanField").getDifferences(t1, t2);
         //t1 has a reference back to itself, so differs from t2
         checkDifferences(
             newValueDifference(
@@ -671,7 +657,7 @@ public class TestSmartCompare extends TestCase {
         //both beans have references/cycles in the reference graph
         //so they are both the same, but we need to check this to make sure the maxDepth prevents infinite recursion
         t2.beanField = t2;
-        introspect(beanInstrospectingConfig);
+        differences = new SmartCompare().introspectPaths(".*beanField").getDifferences(t1, t2);
         checkDifferences(
         );
     }
@@ -684,7 +670,7 @@ public class TestSmartCompare extends TestCase {
         test1.beanField = (TestFieldDifferenceBean)t1;
         test2.beanField = test2;
 
-        introspect(beanInstrospectingConfig);
+        differences = new SmartCompare().introspectPaths(".*beanField").getDifferences(t1, t2);
         //cycle back to the root for t1, back to beanField for t2
         checkDifferences(
             newCycleDifference(
@@ -729,18 +715,6 @@ public class TestSmartCompare extends TestCase {
         c.ignorePaths(".*doubleField");
         differences = c.getDifferences(t1, t2);
         checkDifferences();
-    }
-
-    private void doComparison() {
-        introspect(new SmartCompare.DefaultConfig());
-    }
-
-    private void introspect(SmartCompare.Config f) {
-        differences = new SmartCompare(f).getDifferences(t1, t2);
-    }
-
-    private void doComparison(SmartCompare s) {
-        differences = s.getDifferences(t1, t2);
     }
 
     private void checkDifferences(SmartCompare.Difference... diffs) {
@@ -893,4 +867,7 @@ public class TestSmartCompare extends TestCase {
             return result;
         }
     }
+
+
+
 }

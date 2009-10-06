@@ -48,6 +48,10 @@ public class SmartCompare {
         this(new DefaultConfig());
     }
 
+    public SmartCompare(FieldIntrospector fieldIntrospector) {
+        this(new DefaultConfig(fieldIntrospector));
+    }
+
     public SmartCompare(Config config) {
         this("object1", "object2", config);
     }
