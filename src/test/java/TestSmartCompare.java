@@ -458,13 +458,13 @@ public class TestSmartCompare extends TestCase {
         expectedPaths.add("beanField.stringField");
         expectedPaths.add("beanField.beanField");
 
-        class FieldPathCheckingConfig extends BeanFieldIntrospectingConfig {
+        class FieldPathCheckingConfig extends SmartCompare.DefaultConfig {
             public SmartCompare.FieldType getType(SmartCompare.Field f) {
                 expectedPaths.remove(f.getPath());
                 return super.getType(f);
             }
         }
-        differences = new SmartCompare(new FieldPathCheckingConfig()).getDifferences(t1, t2);
+        differences = new SmartCompare(new FieldPathCheckingConfig()).introspectPaths("beanField").getDifferences(t1, t2);
         assertEquals("paths correct", 0, expectedPaths.size());
     }
 
@@ -833,41 +833,4 @@ public class TestSmartCompare extends TestCase {
     private SmartCompare.Difference newClassDifference(String fieldName, String description, Object fieldValue1, Object fieldValue2, String... path ) {
         return new SmartCompare.Difference(SmartCompare.DifferenceType.CLASS, Arrays.asList(path), fieldName, description, fieldValue1, fieldValue2);
     }
-
-    private static class BeanFieldIntrospectingConfig extends SmartCompare.DefaultConfig {
-
-        public SmartCompare.FieldType getType(SmartCompare.Field f) {
-            SmartCompare.FieldType result = super.getType(f);
-            if ( f.getType() == TestFieldDifferenceBean.class ) {
-                result = SmartCompare.FieldType.INTROSPECTION;
-            }
-            return result;
-        }
-    }
-
-    private static class SuperclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
-
-        public SmartCompare.FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
-            SmartCompare.FieldIntrospector result = super.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
-            if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
-                result = new SmartCompare.SuperclassFieldIntrospector();
-            }
-            return result;
-        }
-    }
-
-    //config with an introspector which includes subclass fields
-    private static class SubclassIntrospectingConfig extends BeanFieldIntrospectingConfig {
-
-        public SmartCompare.FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
-            SmartCompare.FieldIntrospector result = super.getFieldIntrospector(fieldPath, commonSuperclass, o1, o2);
-            if ( TestFieldDifferenceBean.class.isAssignableFrom(commonSuperclass) ) {
-                result = new SmartCompare.SubclassFieldIntrospector();
-            }
-            return result;
-        }
-    }
-
-
-
 }
