@@ -61,11 +61,11 @@ public class SmartCompare {
     private Config config;
 
     public SmartCompare() {
-        this(new DefaultConfig());
+        this(new Config());
     }
 
     public SmartCompare(FieldIntrospector fieldIntrospector) {
-        this(new DefaultConfig(fieldIntrospector));
+        this(new Config(fieldIntrospector));
     }
 
     public SmartCompare(Config config) {
@@ -73,7 +73,7 @@ public class SmartCompare {
     }
 
     public SmartCompare(String description1, String description2) {
-        this(description1, description2, new DefaultConfig(), Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
+        this(description1, description2, new Config(), Collections.EMPTY_LIST, new ArrayList<Object>(), new ArrayList<Object>());
     }
 
     public SmartCompare(String description1, String description2, Config config) {
@@ -605,117 +605,220 @@ public class SmartCompare {
         VALUE   //the values for a field differ
     }
 
-    public static class DefaultConfig implements Config {
+    public static class Config {
 
-        private List<Pattern> ignorePatterns = new ArrayList<Pattern>();
-        private Map<String, Boolean> ignorePaths = new HashMap<String, Boolean>();
+        private static DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
+        private static IgnoreRule IGNORE_RULE = new IgnoreRule();
+        private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
 
-        //an introspection pattern may not specify an introspector, in which case we calculate a default introspector
-        private List<Pattern> introspectPatterns = new ArrayList<Pattern>();
-        private Map<Pattern, FieldIntrospector> patternToIntrospector = new HashMap<Pattern, FieldIntrospector>();
-        private Map<String, FieldIntrospector> pathToIntrospectorMap = new HashMap<String, FieldIntrospector>();
+        private LinkedHashMap<Pattern, ConfigRule> patternToRule = new LinkedHashMap<Pattern, ConfigRule>();
+        private Map<String, FieldType> pathToFieldType = new HashMap<String, FieldType>();
+        private Map<String, FieldComparator> pathToComparator = new HashMap<String, FieldComparator>();
+        private Map<String, FieldIntrospector> pathToIntrospector = new HashMap<String, FieldIntrospector>();
+        private List<Map> pathCaches = Arrays.asList(new Map[] {pathToFieldType, pathToComparator, pathToIntrospector});
+
+        public Config() {}
+
+        public Config(FieldIntrospector rootIntrospector) {
+            bindIntrospector(rootIntrospector, "");
+        }
+
+        public FieldType getType(Field f) {
+            FieldType type = pathToFieldType.get(f.getPath());
+            if (type == null) {
+                type = getTypeFromRules(f);
+                pathToFieldType.put(f.getPath(), type);
+            }
+            return type;
+        }
+
+        private FieldType getTypeFromRules(Field f) {
+            List<ConfigRule> rules = getRules(f.getPath());
+            FieldType type = null;
+            for ( ConfigRule r : rules) {
+                type = r.getType(type, f);
+            }
+            return type;
+        }
+
+        public FieldComparator getComparator(Field f) {
+            FieldComparator comparator = pathToComparator.get(f.getPath());
+            if ( comparator == null) {
+                comparator = getComparatorFromRules(f);
+                pathToComparator.put(f.getPath(), comparator);
+            }
+            return comparator;
+        }
+
+        private FieldComparator getComparatorFromRules(Field f) {
+            List<ConfigRule> rules = getRules(f.getPath());
+            FieldComparator comparator = null;
+            for ( ConfigRule r : rules) {
+                comparator = r.getComparator(comparator, f);
+            }
+            return comparator;
+        }
+
+        public FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
+            FieldIntrospector i = pathToIntrospector.get(path);
+            if ( i == null) {
+                i = getIntrospectorFromRules(path, commonSuperclass, o1, o2);
+                pathToIntrospector.put(path, i);
+            }
+            return i;
+        }
+
+        private FieldIntrospector getIntrospectorFromRules(String path, Class commonSuperclass, Object o1, Object o2) {
+            List<ConfigRule> rules = getRules(path);
+            FieldIntrospector introspector = null;
+            for ( ConfigRule r : rules) {
+                introspector = r.getFieldIntrospector(introspector, path, commonSuperclass, o1, o2);
+            }
+            return introspector;
+        }
+
+        private List<ConfigRule> getRules(String path) {
+            List<ConfigRule> rules = new ArrayList<ConfigRule>();
+            rules.add(DEFAULT_RULE);
+            for (Pattern p : patternToRule.keySet()) {
+                if ( p.matcher(path).matches() ) {
+                    ConfigRule r = patternToRule.get(p);
+                    rules.add(r);
+                }
+            }
+            return rules;
+        }
+
+        public Config ignorePaths(String... pathPattern) {
+            addPatternRule(IGNORE_RULE, pathPattern);
+            return this;
+        }
+
+        public Config introspectPaths(String... pathPattern) {
+            addPatternRule(INTROSPECT_RULE, pathPattern);
+            return this;
+        }
+
+        public Config bindIntrospector(FieldIntrospector f, String... pathPattern) {
+            addPatternRule(new IntrospectorRule(f), pathPattern);
+            return this;
+        }
+
+        public Config bindComparator(FieldComparator c, String... pathPattern) {
+            addPatternRule(new ComparatorRule(c), pathPattern);
+            return this;
+        }
+
+        private void clearPathCaches() {
+            for (Map m : pathCaches) {
+                m.clear();
+            }
+        }
+
+        private void addPatternRule(ConfigRule rule, String... pathPattern) {
+            for ( String pattern : pathPattern) {
+                Pattern p = Pattern.compile(pattern);
+                patternToRule.put(p, rule);
+            }
+            clearPathCaches();
+        }
+
+        private static class ComparatorRule extends ConfigRuleBase {
+            private FieldComparator comparator;
+
+            public ComparatorRule(FieldComparator comparator) {
+                this.comparator = comparator;
+            }
+
+            public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
+                return comparator;
+            }       
+        }
+
+        private static class IntrospectorRule extends ConfigRuleBase {
+            private FieldIntrospector introspector;
+
+            public IntrospectorRule(FieldIntrospector introspector) {
+                this.introspector = introspector;
+            }
+
+            public FieldType getType(FieldType defaultType, Field f) {
+                return FieldType.INTROSPECTION;
+            }
+
+            public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
+                return introspector;
+            }
+
+            public String toString() {
+                return "Introspector Rule";
+            }
+        }
+
+        private static class IgnoreRule extends ConfigRuleBase {
+            public FieldType getType(FieldType defaultType, Field f) {
+                return FieldType.IGNORE;
+            }
+
+            public String toString() {
+                return "Ignore Rule";
+            }
+        }
+
+        private static class IntrospectRule extends ConfigRuleBase {
+            public FieldType getType(FieldType defaultType, Field f) {
+                return FieldType.INTROSPECTION;
+            }
+
+            public String toString() {
+                return "Introspect Rule";
+            }
+        }
+    }
+
+    public static class ConfigRuleBase implements ConfigRule {
+
+        public FieldType getType(FieldType defaultType, Field f) {
+            return defaultType;
+        }
+
+        public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
+            return defaultComparator;
+        }
+
+        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
+            return defaultIntrospector;
+        }
+    }
+
+    private static class DefaultConfigRule implements ConfigRule {
 
         private static final ArrayAsListComparator arrayAsListComparator = new ArrayAsListComparator();
-        private Map<Pattern, FieldComparator> patternToComparatorMap = new HashMap<Pattern, FieldComparator>();
-        private Map<String, FieldComparator> pathToComparatorMap = new HashMap<String, FieldComparator>();
-
         private MapIntrospector mapIntrospector = new MapIntrospector();
         private IterableIntrospector  iterableIntrospector = new IterableIntrospector();
         private ArrayIntrospector arrayIntrospector = new ArrayIntrospector();
         private SubclassFieldIntrospector subclassFieldIntrospector = new SubclassFieldIntrospector();
         private UnsortedSetIntrospector unsortedSetIntrospector = new UnsortedSetIntrospector();
-        private FieldIntrospector DO_NOT_INTROSPECT = new DummyIntrospector("Do Not Introspect");
-        private FieldIntrospector USE_DEFAULT_INTROSPECTOR = new DummyIntrospector("Use Default Introspector");
 
-        public DefaultConfig() {}
-
-        public DefaultConfig(FieldIntrospector rootIntrospector) {
-            pathToIntrospectorMap.put("", rootIntrospector);
+        public FieldType getType(FieldType defaultType, Field f) {
+            return isIntrospectByDefault(f) ? FieldType.INTROSPECTION : FieldType.COMPARISON;
         }
 
-        /**
-         * @return FieldType for field.
-         */
-        public FieldType getType(Field f) {
-            FieldType result;
-            if (isIgnoreField(f)) {
-                result = FieldType.IGNORE;
-            } else {
-                result = isIntrospectField(f) ? FieldType.INTROSPECTION : FieldType.COMPARISON;
-            }
-            return result;
-        }
-
-        protected boolean isIgnoreField(Field f) {
-            Boolean result = ignorePaths.get(f.getPath());
-            //do we already know wether to ignore this field?, if not see if it matches a pattern
-            if ( result == null) {
-                result = searchIgnorePatterns(f);
-                ignorePaths.put(f.getPath(), result);
-            }
-            return result;
-        }
-
-        private Boolean searchIgnorePatterns(Field f) {
-            boolean result = false;
-            for ( Pattern p : ignorePatterns) {
-                if ( result = (p.matcher(f.getPath()).matches()) ) {
-                    break;
-                }
-            }
-            return result;
-        }
-
-        private boolean isIntrospectField(Field f) {
-            FieldIntrospector result = getIntrospectorForField(f);
-            return result != DO_NOT_INTROSPECT;
-        }
-
-        private FieldIntrospector getIntrospectorForField(Field f) {
-            FieldIntrospector result = pathToIntrospectorMap.get(f.getPath());
-            if ( result == null) {
-                result = findInstrospectorFromPatterns(f);
-                pathToIntrospectorMap.put(f.getPath(), result);
-            }
-            return result;
-        }
-
-        private FieldIntrospector findInstrospectorFromPatterns(Field f) {
-            FieldIntrospector result = isIntrospectByDefault(f) ? USE_DEFAULT_INTROSPECTOR : DO_NOT_INTROSPECT;
-            for ( Pattern p : introspectPatterns) {
-                if ( p.matcher(f.getPath()).matches() ) {
-                    //is there a specific introspector defined to use?
-                    if (patternToIntrospector.containsKey(p)) {
-                       result = patternToIntrospector.get(p);
-                    } else {
-                       result = USE_DEFAULT_INTROSPECTOR;
-                    }
-                    break;
-                }
-            }
-            return result;
-        }
-
-        //for some fields, we introspect them be default even if there is no path/pattern specified        
-        protected boolean isIntrospectByDefault(Field f) {
+        private boolean isIntrospectByDefault(Field f) {
             return ClassUtils.isPrimativeOrStringArray(f.getType()) ||
                Map.class.isAssignableFrom(f.getType()) ||
                Iterable.class.isAssignableFrom(f.getType());
         }
 
-        public FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2) {
-            FieldIntrospector f = pathToIntrospectorMap.get(fieldPath);
-            //If the user has overriden the getFieldType() to return FieldType.INTROSPECTION without processing the path
-            //then f may be null or DO_NOT_INTROSPECT. In this case, use the default. If the user needs a custom introspector,
-            //he/she should override this method to return one.
-            if (f == USE_DEFAULT_INTROSPECTOR || f == null || f == DO_NOT_INTROSPECT) {
-                f = getDefaultFieldIntrospector(commonSuperclass);
-                pathToIntrospectorMap.put(fieldPath, f);
+        public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
+            FieldComparator result = null;
+            if ( f.getType().isArray()) {
+                return arrayAsListComparator;
             }
-            return f;
+            return result;
         }
 
-        protected FieldIntrospector getDefaultFieldIntrospector(Class commonSuperclass) {
+        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
             FieldIntrospector result;
             if ( Map.class.isAssignableFrom(commonSuperclass) ) {
                 result = mapIntrospector;
@@ -732,94 +835,9 @@ public class SmartCompare {
             return result;
         }
 
-        public FieldComparator getComparator(Field f) {
-            FieldComparator result = pathToComparatorMap.get(f.getPath());
-            if ( result == null) {
-                result = getDefaultComparator(f);
-                for ( Pattern p : patternToComparatorMap.keySet()) {
-                    if ( p.matcher(f.getPath()).matches() ) {
-                        result = patternToComparatorMap.get(p);
-                        break;
-                    }
-                }
-                pathToComparatorMap.put(f.getPath(), result);
-            }
-            return result;
+        public String toString() {
+            return "Default Rule";
         }
-
-        protected FieldComparator getDefaultComparator(Field f) {
-            FieldComparator result = null;
-            if ( f.getType().isArray()) {
-                return arrayAsListComparator;
-            }
-            return result;
-        }
-
-        public Config ignorePaths(String... pathPatterns) {
-            clearState();
-            for (String path : pathPatterns ) {
-              ignorePatterns.add(Pattern.compile(path));
-            }
-            return this;
-        }
-
-        public Config introspectPaths(String... pathPatterns) {
-            clearState();
-            for (String path : pathPatterns ) {
-                introspectPatterns.add(Pattern.compile(path));
-            }
-            return this;
-        }
-
-        public Config bindIntrospector(FieldIntrospector f, String... pathPatterns) {
-            clearState();
-            for (String path : pathPatterns) {
-                if ( "".equals(path)) { //user is trying to set introspector for the comparison root
-                    pathToIntrospectorMap.put("", f);
-                } else {
-                    Pattern p = Pattern.compile(path);
-                    introspectPatterns.add(p);
-                    patternToIntrospector.put(p, f);
-                }
-            }
-            return this;
-        }
-
-        public Config bindComparator(FieldComparator c, String... pathPatterns) {
-            clearState();
-            for ( String pattern : pathPatterns) {
-                patternToComparatorMap.put(Pattern.compile(pattern), c);
-            }
-            return this;
-        }
-
-        //patterns are changing, clear our precomputed path maps
-        private void clearState() {
-            ignorePaths.clear();
-            pathToIntrospectorMap.clear();
-            pathToComparatorMap.clear();
-        }
-
-        private class DummyIntrospector implements FieldIntrospector {
-            private String name;
-
-            public DummyIntrospector(String name) {
-                this.name = name;
-            }
-
-            public List<Field> getFields(String pathPrefix, Class commonSuperclass, Object object1, Object object2) {
-                return null;
-            }
-
-            public String toString() {
-                return name;
-            }
-        }
-
-    }
-
-    public interface IntrospectorFactory {
-        FieldIntrospector getFieldIntrospector(String fieldPath, Class commonSuperclass, Object o1, Object o2);
     }
 
     private static class ArrayAsListComparator implements FieldComparator {
@@ -1314,13 +1332,13 @@ public class SmartCompare {
     /**
      * Defines how the calculator processes fields
      */
-    public static interface Config {
+    public static interface ConfigRule {
 
         /**
          * @return a type which indicates whether the values for this field should be compared,
          * whether we should introspect the values to drill down the bean graph further, or ignore them
          */
-        FieldType getType(Field f);
+        FieldType getType(FieldType defaultType, Field f);
 
         /**
          * This method is called to obtain an EqualityComparator in cases were a FieldType is FieldType.COMPARISON
@@ -1330,37 +1348,15 @@ public class SmartCompare {
          * 1- the object class implements Comparable and compareTo returns zero, or
          * 2- o1.equals(o2) returns true
          */
-        FieldComparator getComparator(Field f);
+        FieldComparator getComparator(FieldComparator defaultComparator, Field f);
 
 
         /**
          * @return an introspector which is responsible for determining a list of Fields given two objects for introspection.
          * commonSuperclass is the most specific superclass in common (which may be Object.class)
          */
-        FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
+        FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2);
 
-        /**
-         * ignore fields with paths matching pathPattern
-         */
-        Config ignorePaths(String... pathPattern);
-
-        /**
-         * introspect fields with paths matching one or more pathPatterns, provided they do not match an ignore path pattern
-         */
-        Config introspectPaths(String... pathPattern);
-
-        /**
-         * introspect fields with paths matching one or more pathPatterns using the supplied introspector, provided they do not
-         * match an ignore path pattern
-         */
-        Config bindIntrospector(FieldIntrospector f, String... pathPattern);
-
-
-        /**
-         * Use the supplied comparator for paths matching one or more pathPatterns, provided they do not match an ignore path
-         * pattern or an introspection pattern
-         */
-        Config bindComparator(FieldComparator c, String... pathPattern);
     }
 
     /**

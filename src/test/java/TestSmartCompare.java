@@ -117,7 +117,7 @@ public class TestSmartCompare extends TestCase {
         t2 =  new TestFieldDifferenceBean(10d, "test");
 
         //use the superclass introspector to igonore differneces in the fields
-        SmartCompare.DefaultConfig config = new SmartCompare.DefaultConfig(
+        SmartCompare.Config config = new SmartCompare.Config(
             new SmartCompare.SuperclassFieldIntrospector()
         );
 
@@ -131,18 +131,18 @@ public class TestSmartCompare extends TestCase {
         );
     }
 
-    //you can pass an introspector into the DefaultConfig constructor, or set it for the "" path
+    //you can pass an introspector into the Config constructor, or set it for the "" path
     public void testSetRootIntropector() {
         t1 = "wibble";
         t2 =  new TestFieldDifferenceBean(10d, "test");
 
         SmartCompare.SuperclassFieldIntrospector introspector = new SmartCompare.SuperclassFieldIntrospector();
 
-        SmartCompare.DefaultConfig config = new SmartCompare.DefaultConfig();
+        SmartCompare.Config config = new SmartCompare.Config();
         config.bindIntrospector(introspector, "");
         differences = new SmartCompare(config).getDifferences(t1, t2);
 
-        SmartCompare.DefaultConfig config2 = new SmartCompare.DefaultConfig(introspector);
+        SmartCompare.Config config2 = new SmartCompare.Config(introspector);
         List<SmartCompare.Difference> differences2 = new SmartCompare(config2).getDifferences(t1, t2);
 
         assertEquals(1, differences.size());
@@ -458,7 +458,7 @@ public class TestSmartCompare extends TestCase {
         expectedPaths.add("beanField.stringField");
         expectedPaths.add("beanField.beanField");
 
-        class FieldPathCheckingConfig extends SmartCompare.DefaultConfig {
+        class FieldPathCheckingConfig extends SmartCompare.Config {
             public SmartCompare.FieldType getType(SmartCompare.Field f) {
                 expectedPaths.remove(f.getPath());
                 return super.getType(f);
