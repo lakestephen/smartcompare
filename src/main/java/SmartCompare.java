@@ -118,6 +118,11 @@ public class SmartCompare {
         return this;
     }
 
+    public SmartCompare bindRule(ConfigRule r, String... pathPatterns) {
+        config.bindRule(r, pathPatterns);
+        return this;
+    }
+
     public void printDifferences(Object o1, Object o2) {
         printDifferences(o1, o2, System.out);
     }
@@ -692,23 +697,31 @@ public class SmartCompare {
         }
 
         public Config ignorePaths(String... pathPattern) {
-            addPatternRule(IGNORE_RULE, pathPattern);
+            bindRule(IGNORE_RULE, pathPattern);
             return this;
         }
 
         public Config introspectPaths(String... pathPattern) {
-            addPatternRule(INTROSPECT_RULE, pathPattern);
+            bindRule(INTROSPECT_RULE, pathPattern);
             return this;
         }
 
         public Config bindIntrospector(FieldIntrospector f, String... pathPattern) {
-            addPatternRule(new IntrospectorRule(f), pathPattern);
+            bindRule(new IntrospectorRule(f), pathPattern);
             return this;
         }
 
         public Config bindComparator(FieldComparator c, String... pathPattern) {
-            addPatternRule(new ComparatorRule(c), pathPattern);
+            bindRule(new ComparatorRule(c), pathPattern);
             return this;
+        }
+
+        public void bindRule(ConfigRule rule, String... pathPattern) {
+            for ( String pattern : pathPattern) {
+                Pattern p = Pattern.compile(pattern);
+                patternToRule.put(p, rule);
+            }
+            clearPathCaches();
         }
 
         private void clearPathCaches() {
@@ -717,15 +730,7 @@ public class SmartCompare {
             }
         }
 
-        private void addPatternRule(ConfigRule rule, String... pathPattern) {
-            for ( String pattern : pathPattern) {
-                Pattern p = Pattern.compile(pattern);
-                patternToRule.put(p, rule);
-            }
-            clearPathCaches();
-        }
-
-        private static class ComparatorRule extends ConfigRuleBase {
+        private static class ComparatorRule extends ConfigRuleAdapter {
             private FieldComparator comparator;
 
             public ComparatorRule(FieldComparator comparator) {
@@ -737,7 +742,7 @@ public class SmartCompare {
             }       
         }
 
-        private static class IntrospectorRule extends ConfigRuleBase {
+        private static class IntrospectorRule extends ConfigRuleAdapter {
             private FieldIntrospector introspector;
 
             public IntrospectorRule(FieldIntrospector introspector) {
@@ -757,7 +762,7 @@ public class SmartCompare {
             }
         }
 
-        private static class IgnoreRule extends ConfigRuleBase {
+        private static class IgnoreRule extends ConfigRuleAdapter {
             public FieldType getType(FieldType defaultType, Field f) {
                 return FieldType.IGNORE;
             }
@@ -767,7 +772,7 @@ public class SmartCompare {
             }
         }
 
-        private static class IntrospectRule extends ConfigRuleBase {
+        private static class IntrospectRule extends ConfigRuleAdapter {
             public FieldType getType(FieldType defaultType, Field f) {
                 return FieldType.INTROSPECTION;
             }
@@ -778,7 +783,7 @@ public class SmartCompare {
         }
     }
 
-    public static class ConfigRuleBase implements ConfigRule {
+    public static class ConfigRuleAdapter implements ConfigRule {
 
         public FieldType getType(FieldType defaultType, Field f) {
             return defaultType;

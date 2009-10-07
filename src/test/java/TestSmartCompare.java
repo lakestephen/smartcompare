@@ -717,6 +717,64 @@ public class TestSmartCompare extends TestCase {
         checkDifferences();
     }
 
+    //test bind rules are processed in order
+    public void testBindRuleProcessingOrder() {
+        t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
+        t2 = new TestFieldDifferenceBean(10d, "test2", Color.BLACK);
+
+        //first add a rule to ignore every field
+        SmartCompare c = new SmartCompare().bindRule(new SmartCompare.ConfigRuleAdapter() {
+            public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
+                return SmartCompare.FieldType.IGNORE;
+            }
+        }, ".*");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+
+        //now a rule which overrides this for color field
+        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+            public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
+                return f.getName().equals("colorField") ? SmartCompare.FieldType.COMPARISON : defaultType;
+            }
+        }, "colorField");
+
+        differences = c.getDifferences(t1, t2);
+        checkDifferences(
+            newValueDifference(
+                "colorField",
+                "object1:[java.awt.Color[r=255,g=0,b=0]] object2:[java.awt.Color[r=0,g=0,b=0]]",
+                Color.RED,
+                Color.BLACK
+            )
+        );
+
+        //now a rule which supresses the color field rule and lets through the default from the first rule,
+        //to ignore the stringField difference
+        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+            public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
+                return f.getName().equals("colorField") ? SmartCompare.FieldType.IGNORE : defaultType;
+            }
+        }, ".*");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+
+        //now introspect the colorField and compare its field values
+        c.introspectPaths("colorField");
+        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+            public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
+                return SmartCompare.FieldType.COMPARISON;
+            }
+        }, "colorField\\..*");
+        differences = c.getDifferences(t1, t2);
+        checkDifferences(newValueDifference(
+            "value",
+            "object1:[-65536] object2:[-16777216]",
+            -65536,
+            -16777216,
+            "colorField"
+        ));
+    }
+
     private void checkDifferences(SmartCompare.Difference... diffs) {
         List<SmartCompare.Difference> expectedDifferences = Arrays.asList(diffs);
         int maxDiffs = Math.max(expectedDifferences.size(), differences.size());
