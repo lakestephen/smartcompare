@@ -10,17 +10,31 @@ import java.util.regex.Pattern;
  * Time: 13:38:06
  *
  * SmartCompare is a class which compares two Objects to produce a list of differences.
- * SmartCompare uses an introspector to find a list of Fields to compare.
  *
- * By default, each field identified for the objects has its value compared.
- * You can also specify that a field should be ignored, or its values should be introspected further
- * (thereby walking down the reference graph from the root objects).
+ * A root FieldIntrospector is used to find a list of Fields to compare.
+ * By default, we do a value comparison for each Field identified (using reference equality, a configurable FieldComparator,
+ * Comparable.compareTo() or Object.equals() to determine whether values differ).
+ * You can also specify that a Field should be ignored, or its values should be introspected further, generating another
+ * list of Fields to compare for the two values identified.
  *
- * You can configure the behaviour based on the path through the reference graph, where each token is
- * a field name. You can set rules which match paths using regular expressions.
+ * You can configure behaviour based on the path through the reference graph, where each token is
+ * a field name. For example, if a class 'Category' representing a hieararchy of categories defines Fields named
+ * 'parent' and 'name', you could reference the name of the grandparent Category using the path 'parent.parent.name'
  *
- * eg. given two objects of the following class Category, the following comparison would find differences
- * in category 'name' up the category hierarchy, but would ignore differences in 'priority'
+ * You can set rules which match paths using regular expressions:
+ *
+ * If you wanted to compare two categories up the Category tree recursively, considering the Fields of each parent, you
+ * would need to tell SmartCompare to introspect the parent Field:
+ * new SmartCompare().introspectPaths(".*parent");
+ * s.printDifferences()
+ *
+ * If you wanted to set a FieldComparator for the grandparent 'name' field which ignored case, you could create a class
+ * IgnoreCaseComparator, and do the following:
+ * new SmartCompare().introspectPaths(".*parent").bindComparator(new IgnoreCaseComparator(), "parent.parent.name");
+ * s.printDifferences();
+ *
+ * You can also ignore Fields based on path. Given two objects of the following class Category, the following comparison
+ * would find differences in category 'name' up the category hierarchy, but would ignore differences in 'priority'
  * class Category {
  *   String name;
  *   int priority;
@@ -34,16 +48,6 @@ import java.util.regex.Pattern;
  * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
  * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
  * being compared are Maps - in this case the fields are identified by the keys in the Map.
- *
- * The comparison works in the following way, when getDifferences(o1, o2) is called:
- * - Obtain a FieldIntrospector for the two objects being compared, using the config provided.
- * - Get a list of fields from the FieldIntrospector
- * - For each field, use the config to determine whether to compare it, ignore it, or introspect it
- *     - If we are to compare the field, use the config to see if there is a custom FieldComparator provided,
- *       otherwise use Comparable.compareTo or Object.equals() to decide whether there is a difference.
- *       If there is a difference, add it to the list of differences which is returned
- *     - If we are to introspect the field, get values for the field from each Object, create a new instance of
- *       SmartCompare and use it to compare the field values recursively.
  */
 public class SmartCompare {
 
@@ -1334,7 +1338,6 @@ public class SmartCompare {
          * commonSuperclass is the most specific superclass in common (which may be Object.class)
          */
         FieldIntrospector getFieldIntrospector(String path, Class commonSuperclass, Object o1, Object o2);
-
 
         /**
          * ignore fields with paths matching pathPattern
