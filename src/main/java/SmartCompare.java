@@ -612,6 +612,8 @@ public class SmartCompare {
         private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
 
         private LinkedHashMap<Pattern, ConfigRule> patternToRule = new LinkedHashMap<Pattern, ConfigRule>();
+
+        //the path maps/caches are the results of applying the current patterns/rules, they are invalidated when patterns change
         private Map<String, FieldType> pathToFieldType = new HashMap<String, FieldType>();
         private Map<String, FieldComparator> pathToComparator = new HashMap<String, FieldComparator>();
         private Map<String, FieldIntrospector> pathToIntrospector = new HashMap<String, FieldIntrospector>();
