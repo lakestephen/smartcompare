@@ -112,6 +112,11 @@ public class SmartCompare {
         return this;
     }
 
+    public synchronized SmartCompare comparePaths(String... pathPatterns) {
+        config.comparePaths(pathPatterns);
+        return this;
+    }
+
     public synchronized SmartCompare bindIntrospector(FieldIntrospector f, String... pathPatterns) {
         config.bindIntrospector(f, pathPatterns);
         return this;
@@ -631,6 +636,7 @@ public class SmartCompare {
         private static DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
         private static IgnoreRule IGNORE_RULE = new IgnoreRule();
         private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
+        private static CompareRule COMPARE_RULE = new CompareRule();
 
         private LinkedHashMap<Pattern, ConfigRule> patternToRule = new LinkedHashMap<Pattern, ConfigRule>();
 
@@ -722,6 +728,11 @@ public class SmartCompare {
             return this;
         }
 
+        public Config comparePaths(String... pathPattern) {
+            bindRule(COMPARE_RULE, pathPattern);
+            return this;
+        }
+
         public Config bindIntrospector(FieldIntrospector f, String... pathPattern) {
             bindRule(new IntrospectorRule(f), pathPattern);
             return this;
@@ -751,6 +762,10 @@ public class SmartCompare {
 
             public ComparatorRule(FieldComparator comparator) {
                 this.comparator = comparator;
+            }
+
+            public FieldType getType(FieldType defaultType, Field f) {
+                return FieldType.COMPARISON;
             }
 
             public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
@@ -795,6 +810,16 @@ public class SmartCompare {
 
             public String toString() {
                 return "Introspect Rule";
+            }
+        }
+
+        private static class CompareRule extends ConfigRuleBase {
+            public FieldType getType(FieldType defaultType, Field f) {
+                return FieldType.COMPARISON;
+            }
+
+            public String toString() {
+                return "Compare Rule";
             }
         }
     }

@@ -4,8 +4,6 @@
     <list default="true" readonly="true" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/SmartCompare.java" afterPath="$PROJECT_DIR$/src/main/java/SmartCompare.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/od-microutils.iws" afterPath="$PROJECT_DIR$/od-microutils.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test/java/TestSmartCompare.java" afterPath="$PROJECT_DIR$/src/test/java/TestSmartCompare.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/od-microutils.ipr" afterPath="$PROJECT_DIR$/od-microutils.ipr" />
     </list>
     <ignored path=".idea/workspace.xml" />
     <ignored path="od-microutils.iws" />
@@ -16,7 +14,7 @@
     <SUITE FILE_PATH="coverage/od-microutils$All_in_od_microutils..es" NAME="All in od-microutils Coverage Results" MODIFIED="1254854012037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$TestSmartCompare..es" NAME="TestSmartCompare Coverage Results" MODIFIED="1254850501179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$TestSmartCompare_testSuperclassIntrospectorOnBeanField..es" NAME="TestSmartCompare.testSuperclassIntrospectorOnBeanField Coverage Results" MODIFIED="1254907417263" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/od-microutils$All_Tests..es" NAME="All Tests Coverage Results" MODIFIED="1254913923182" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/od-microutils$All_Tests..es" NAME="All Tests Coverage Results" MODIFIED="1254996173536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$All_tests_with_coverage..es" NAME="All tests with coverage Coverage Results" MODIFIED="1254757895329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
   <component name="CreatePatchCommitExecutor">
@@ -28,7 +26,7 @@
   </component>
   <component name="DebuggerManager">
     <line_breakpoints>
-      <breakpoint url="file://$PROJECT_DIR$/src/main/java/SmartCompare.java" line="669" class="SmartCompare.Config" package="">
+      <breakpoint url="file://$PROJECT_DIR$/src/main/java/SmartCompare.java" line="691" class="SmartCompare.Config" package="">
         <option name="ENABLED" value="true" />
         <option name="LOG_ENABLED" value="false" />
         <option name="LOG_EXPRESSION_ENABLED" value="false" />
@@ -82,13 +80,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="SmartCompare.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="SmartCompare.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/SmartCompare.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="672" column="0" selection-start="28143" selection-end="28143" vertical-scroll-proportion="-6.04">
+            <state line="825" column="38" selection-start="33690" selection-end="33690" vertical-scroll-proportion="0.66930693">
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Appendable.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Appendable.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="39" column="78" selection-start="1397" selection-end="1397" vertical-scroll-proportion="-14.111111">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -111,10 +118,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestCategory.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/TestCategory.java">
+      <file leaf-file-name="TestCategoryExample.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test/java/TestCategoryExample.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-5.44">
+            <state line="8" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="41.68">
               <folding />
             </state>
           </provider>
@@ -138,10 +145,19 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestSmartCompare.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="TestSmartCompare.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/TestSmartCompare.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="726" column="48" selection-start="26873" selection-end="26873" vertical-scroll-proportion="0.54488516">
+            <state line="16" column="16" selection-start="315" selection-end="315" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Matcher.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/regex/Matcher.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="83" column="36" selection-start="3743" selection-end="3743" vertical-scroll-proportion="-0.9444444">
               <folding />
             </state>
           </provider>
@@ -150,7 +166,7 @@
       <file leaf-file-name="DemoSmartCompare.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/test/java/DemoSmartCompare.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="12" column="0" selection-start="202" selection-end="254" vertical-scroll-proportion="0.0">
+            <state line="10" column="13" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -236,13 +252,7 @@
         <value defaultName="moduleWithDependencies" />
       </option>
       <envs />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="4236" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Make" value="true" />
@@ -365,9 +375,34 @@
         <option name="Make" value="true" />
       </method>
     </configuration>
-    <list size="2">
+    <configuration default="false" name="TestCategoryExample" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+      <module name="od-microutils" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="TestCategoryExample" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="ADDITIONAL_CLASS_PATH" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method>
+        <option name="Make" value="true" />
+      </method>
+    </configuration>
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="JUnit.All Tests" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.TestSmartCompare.testBindRuleProcessingOrder" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.TestCategory" />
+      <item index="2" class="java.lang.String" itemvalue="JUnit.TestSmartCompare.testBindRuleProcessingOrder" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -415,14 +450,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="962" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24990052" sideWeight="0.5397536" order="1" side_tool="false" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.21611722" sideWeight="0.5" order="1" side_tool="false" />
-      <window_info id="IntelliJad Console" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11563518" sideWeight="0.6556777" order="9" side_tool="false" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22710623" sideWeight="0.5" order="1" side_tool="false" />
+      <window_info id="IntelliJad Console" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28257328" sideWeight="0.6556777" order="9" side_tool="false" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5885226" sideWeight="0.5" order="3" side_tool="false" />
       <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" />
@@ -431,13 +466,13 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4029304" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20653062" sideWeight="0.43345544" order="1" side_tool="false" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20602606" sideWeight="0.71794873" order="1" side_tool="false" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22204082" sideWeight="0.7045177" order="0" side_tool="false" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.40716612" sideWeight="0.8998779" order="0" side_tool="false" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33577535" sideWeight="0.5" order="2" side_tool="false" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2735043" sideWeight="0.5" order="2" side_tool="false" />
       <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
       <window_info id="PMD" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26150122" sideWeight="0.5" order="12" side_tool="false" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" />
@@ -490,20 +525,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/Comparator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="80" column="17" selection-start="3800" selection-end="3800" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/ThreadLocal.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="130" column="18" selection-start="4868" selection-end="4868" vertical-scroll-proportion="-0.9444444">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/beans/BeanInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="75" column="19" selection-start="2963" selection-end="2963" vertical-scroll-proportion="0.0">
@@ -785,20 +806,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/DemoSmartCompare.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="202" selection-end="254" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/java/TestCategory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="32" selection-start="163" selection-end="163" vertical-scroll-proportion="-5.44">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/jre/lib/rt.jar!/sun/reflect/NativeMethodAccessorImpl.class">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
@@ -813,19 +820,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/SmartCompare.java">
+    <entry file="file://$PROJECT_DIR$/src/test/java/DemoSmartCompare.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="672" column="0" selection-start="28143" selection-end="28143" vertical-scroll-proportion="-6.04">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="10" column="13" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/java/TestCategoryExample.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="41.68">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/regex/Matcher.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="83" column="36" selection-start="3743" selection-end="3743" vertical-scroll-proportion="-0.9444444">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Appendable.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="39" column="78" selection-start="1397" selection-end="1397" vertical-scroll-proportion="-14.111111">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestSmartCompare.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="726" column="48" selection-start="26873" selection-end="26873" vertical-scroll-proportion="0.54488516">
+        <state line="16" column="16" selection-start="315" selection-end="315" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/SmartCompare.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="825" column="38" selection-start="33690" selection-end="33690" vertical-scroll-proportion="0.66930693">
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
