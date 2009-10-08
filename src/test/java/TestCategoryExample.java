@@ -6,7 +6,7 @@ import junit.framework.TestCase;
  * Date: 06-Oct-2009
  * Time: 19:09:29
  */
-public class TestCategory extends TestCase {
+public class TestCategoryExample extends TestCase {
 
     private StringBuilder sb = new StringBuilder();
     public Category cars;

@@ -723,7 +723,7 @@ public class TestSmartCompare extends TestCase {
         t2 = new TestFieldDifferenceBean(10d, "test2", Color.BLACK);
 
         //first add a rule to ignore every field
-        SmartCompare c = new SmartCompare().bindRule(new SmartCompare.ConfigRuleAdapter() {
+        SmartCompare c = new SmartCompare().bindRule(new SmartCompare.ConfigRuleBase() {
             public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
                 return SmartCompare.FieldType.IGNORE;
             }
@@ -732,7 +732,7 @@ public class TestSmartCompare extends TestCase {
         checkDifferences();
 
         //now a rule which overrides this for color field
-        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+        c.bindRule(new SmartCompare.ConfigRuleBase() {
             public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
                 return f.getName().equals("colorField") ? SmartCompare.FieldType.COMPARISON : defaultType;
             }
@@ -750,7 +750,7 @@ public class TestSmartCompare extends TestCase {
 
         //now a rule which supresses the color field rule and lets through the default from the first rule,
         //to ignore the stringField difference
-        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+        c.bindRule(new SmartCompare.ConfigRuleBase() {
             public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
                 return f.getName().equals("colorField") ? SmartCompare.FieldType.IGNORE : defaultType;
             }
@@ -760,7 +760,7 @@ public class TestSmartCompare extends TestCase {
 
         //now introspect the colorField and compare its field values
         c.introspectPaths("colorField");
-        c.bindRule(new SmartCompare.ConfigRuleAdapter() {
+        c.bindRule(new SmartCompare.ConfigRuleBase() {
             public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
                 return SmartCompare.FieldType.COMPARISON;
             }

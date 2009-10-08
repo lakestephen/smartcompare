@@ -9,29 +9,39 @@ import java.util.regex.Pattern;
  * Date: 14-Jul-2009
  * Time: 13:38:06
  *
- * SmartCompare is a class which compares two Objects to produce a list of differences.
+ * SmartCompare is a utility which compares two Objects to get (or print) a list of differences.
  *
- * A root FieldIntrospector is used to find a list of Fields to compare.
- * By default, we do a value comparison for each Field identified (using reference equality, a configurable FieldComparator,
+ * A FieldIntrospector is used to find a list of Fields for the comparison.
+ * Usually, a value comparison is performed for each Field identified (using reference equality, a configurable FieldComparator,
  * Comparable.compareTo() or Object.equals() to determine whether values differ).
  * You can also specify that a Field should be ignored, or its values should be introspected further, generating another
  * list of Fields to compare for the two values identified.
  *
- * You can configure behaviour based on the path through the reference graph, where each token is
- * a field name. For example, if a class 'Category' representing a hieararchy of categories defines Fields named
- * 'parent' and 'name', you could reference the name of the grandparent Category using the path 'parent.parent.name'
+ * The meaning of 'Field' is this context is flexible - a 'Field' does not necessarily imply a field on a class
+ * at language level, although the default FieldIntrospector does use reflection to find the fields defined by the
+ * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
+ * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
+ * being compared are Maps - in this case the fields are identified by the keys in the Map.
  *
- * You can set rules which match paths using regular expressions:
+ * You can configure comparison behaviour based on the path through the reference graph, where each token is
+ * a field name. This is done by binding ConfigRule to paths, by specifying a path matching regular expression.
+ * For example, if a class 'Category', representing a hieararchy of categories, defines Fields for
+ * 'categoryName' and 'parent', you could bind a rule to apply to the name of the grandparent Category using the path
+ * 'parent.parent.categoryName'
+ *
+ * You can bind a rule directly using new SmartCompare().bindRule(myRule, myPathExpression).
+ * There are shorthand ways to bind rule using the methods smartCompare.ignorePaths(), introspectPaths(),
+ * bindIntrospector(), comparePaths() and bindComparator()
  *
  * If you wanted to compare two categories up the Category tree recursively, considering the Fields of each parent, you
  * would need to tell SmartCompare to introspect the parent Field:
- * new SmartCompare().introspectPaths(".*parent");
- * s.printDifferences()
+ * new SmartCompare().introspectPaths(".*parent");   //introspect any path ending in parent
+ * s.printDifferences(cat1, cat2)
  *
- * If you wanted to set a FieldComparator for the grandparent 'name' field which ignored case, you could create a class
- * IgnoreCaseComparator, and do the following:
+ * If you also wanted to set a FieldComparator for the grandparent 'name' field which ignored case, you could create a class
+ * IgnoreCaseComparator, and bind the following rules:
  * new SmartCompare().introspectPaths(".*parent").bindComparator(new IgnoreCaseComparator(), "parent.parent.name");
- * s.printDifferences();
+ * s.getDifferences(cat1, cat2);
  *
  * You can also ignore Fields based on path. Given two objects of the following class Category, the following comparison
  * would find differences in category 'name' up the category hierarchy, but would ignore differences in 'priority'
@@ -41,13 +51,7 @@ import java.util.regex.Pattern;
  *   Category parent;
  * }
  * SmartCompare s = new SmartCompare().introspectPaths(".*parent").ignorePaths(".*priority");
- * s.printDifferences();
- *
- * The meaning of 'Field' is flexible - a 'Field' does not necessarily imply a field on a class
- * at language level, although the default FieldIntrospector does use reflection to find the fields defined by the
- * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
- * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
- * being compared are Maps - in this case the fields are identified by the keys in the Map.
+ * s.printDifferences(cat1, cat2);
  */
 public class SmartCompare {
 
@@ -98,36 +102,44 @@ public class SmartCompare {
         this.description2 = description2;
     }
 
-    public SmartCompare ignorePaths(String... pathPatterns) {
+    public synchronized SmartCompare ignorePaths(String... pathPatterns) {
         config.ignorePaths(pathPatterns);
         return this;
     }
 
-    public SmartCompare introspectPaths(String... pathPatterns) {
+    public synchronized SmartCompare introspectPaths(String... pathPatterns) {
         config.introspectPaths(pathPatterns);
         return this;
     }
 
-    public SmartCompare bindIntrospector(FieldIntrospector f, String... pathPatterns) {
+    public synchronized SmartCompare bindIntrospector(FieldIntrospector f, String... pathPatterns) {
         config.bindIntrospector(f, pathPatterns);
         return this;
     }
 
-    public SmartCompare bindComparator(FieldComparator c, String... pathPatterns) {
+    public synchronized SmartCompare bindComparator(FieldComparator c, String... pathPatterns) {
         config.bindComparator(c, pathPatterns);
         return this;
     }
 
-    public SmartCompare bindRule(ConfigRule r, String... pathPatterns) {
+    public synchronized SmartCompare bindRule(ConfigRule r, String... pathPatterns) {
         config.bindRule(r, pathPatterns);
         return this;
     }
 
-    public void printDifferences(Object o1, Object o2) {
+    /**
+     * Print a list of differences to standard out
+     * @throws ComparisonException, if an error prevents the comparison
+     */
+    public void printDifferences(Object o1, Object o2) throws ComparisonException {
         printDifferences(o1, o2, System.out);
     }
 
-    public void printDifferences(Object o1, Object o2, Appendable s) {
+    /**
+     * Print a list of differences to the supplied Appendable.
+     * @throws ComparisonException, if an error prevents the comparison
+     */
+    public void printDifferences(Object o1, Object o2, Appendable s) throws ComparisonException {
         List<Difference> differences = getDifferences(o1, o2);
         try {
             Iterator<Difference> i = differences.iterator();
@@ -140,17 +152,25 @@ public class SmartCompare {
         }
     }
 
-    public synchronized List<Difference> getDifferences(Object o1, Object o2) {
+    /**
+     * Compare the two objects to get a list of Differences.
+     * @throws ComparisonException, if an error prevents the comparison
+     */
+    public synchronized List<Difference> getDifferences(Object o1, Object o2) throws ComparisonException {
         List<Difference> result = new ArrayList<Difference>();
-        if ( o1 != null || o2 != null) {
-            boolean nullDifference = addNullDifference(result, INPUT_OBJECT_TEXT, o1, o2);
-            if ( ! nullDifference ) {
-                boolean cycleExists = addCycleDifference(result, o1, o2);
-                if ( ! cycleExists ) {
-                    addClassDifference(result, o1, o2);
-                    addFieldDifferences(result, o1, o2);
+        try {
+            if ( o1 != null || o2 != null) {
+                boolean nullDifference = addNullDifference(result, INPUT_OBJECT_TEXT, o1, o2);
+                if ( ! nullDifference ) {
+                    boolean cycleExists = addCycleDifference(result, o1, o2);
+                    if ( ! cycleExists ) {
+                        addClassDifference(result, o1, o2);
+                        addFieldDifferences(result, o1, o2);
+                    }
                 }
             }
+        } catch (Throwable t) {
+            throw new ComparisonException(t);
         }
         return result;
     }
@@ -204,7 +224,7 @@ public class SmartCompare {
         return result;
     }
 
-    private boolean addFieldDifferences(List<Difference> differences, Object o1, Object o2) {
+    private boolean addFieldDifferences(List<Difference> differences, Object o1, Object o2) throws Exception {
         List<Field> introspectionFields = new ArrayList<Field>();
         List<Field> comparisonFields = new ArrayList<Field>();
 
@@ -231,30 +251,26 @@ public class SmartCompare {
         }
     }
 
-    private List<Difference> getFieldDifferences(List<Field> fields, FieldDiffCalculator fieldDiffCalculator, Object o1, Object o2) {
+    private List<Difference> getFieldDifferences(List<Field> fields, FieldDiffCalculator fieldDiffCalculator, Object o1, Object o2) throws Exception {
         List<Difference> result = new ArrayList<Difference>();
 
         for ( Field f : fields) {
-            try {
-                Object fieldValue1 = f.getValue(o1);
-                Object fieldValue2 = f.getValue(o2);
+            Object fieldValue1 = f.getValue(o1);
+            Object fieldValue2 = f.getValue(o2);
 
-                if ( fieldValue1 != fieldValue2) {
-                    //check to see if one of the fields is null
-                    Difference d = getUndefinedFieldDifference(f.getName(), fieldValue1, fieldValue2);
-                    if ( d != null ) {
-                        result.add(d);
-                    } else {
-                        boolean nullDifference = addNullDifference(result, f.getName(), fieldValue1, fieldValue2);
-                        if ( ! nullDifference ){
-                            result.addAll(fieldDiffCalculator.getFieldDifferences(
-                                f, fieldValue1, fieldValue2)
-                            );
-                        }
+            if ( fieldValue1 != fieldValue2) {
+                //check to see if one of the fields is null
+                Difference d = getUndefinedFieldDifference(f.getName(), fieldValue1, fieldValue2);
+                if ( d != null ) {
+                    result.add(d);
+                } else {
+                    boolean nullDifference = addNullDifference(result, f.getName(), fieldValue1, fieldValue2);
+                    if ( ! nullDifference ){
+                        result.addAll(fieldDiffCalculator.getFieldDifferences(
+                            f, fieldValue1, fieldValue2)
+                        );
                     }
                 }
-            } catch (Throwable t) {
-                throw new ComparisonException(t);
             }
         }
         return result;
@@ -730,7 +746,7 @@ public class SmartCompare {
             }
         }
 
-        private static class ComparatorRule extends ConfigRuleAdapter {
+        private static class ComparatorRule extends ConfigRuleBase {
             private FieldComparator comparator;
 
             public ComparatorRule(FieldComparator comparator) {
@@ -742,7 +758,7 @@ public class SmartCompare {
             }       
         }
 
-        private static class IntrospectorRule extends ConfigRuleAdapter {
+        private static class IntrospectorRule extends ConfigRuleBase {
             private FieldIntrospector introspector;
 
             public IntrospectorRule(FieldIntrospector introspector) {
@@ -762,7 +778,7 @@ public class SmartCompare {
             }
         }
 
-        private static class IgnoreRule extends ConfigRuleAdapter {
+        private static class IgnoreRule extends ConfigRuleBase {
             public FieldType getType(FieldType defaultType, Field f) {
                 return FieldType.IGNORE;
             }
@@ -772,7 +788,7 @@ public class SmartCompare {
             }
         }
 
-        private static class IntrospectRule extends ConfigRuleAdapter {
+        private static class IntrospectRule extends ConfigRuleBase {
             public FieldType getType(FieldType defaultType, Field f) {
                 return FieldType.INTROSPECTION;
             }
@@ -783,7 +799,10 @@ public class SmartCompare {
         }
     }
 
-    public static class ConfigRuleAdapter implements ConfigRule {
+    /**
+     * A base class for ConfigRules, which simply returns the values from the previous rule in the rule chain
+     */
+    public static class ConfigRuleBase implements ConfigRule {
 
         public FieldType getType(FieldType defaultType, Field f) {
             return defaultType;
@@ -798,7 +817,7 @@ public class SmartCompare {
         }
     }
 
-    private static class DefaultConfigRule implements ConfigRule {
+    public static class DefaultConfigRule implements ConfigRule {
 
         private static final ArrayAsListComparator arrayAsListComparator = new ArrayAsListComparator();
         private MapIntrospector mapIntrospector = new MapIntrospector();
@@ -812,14 +831,14 @@ public class SmartCompare {
         }
 
         private boolean isIntrospectByDefault(Field f) {
-            return ClassUtils.isPrimativeOrStringArray(f.getType()) ||
-               Map.class.isAssignableFrom(f.getType()) ||
-               Iterable.class.isAssignableFrom(f.getType());
+            return ClassUtils.isPrimativeOrStringArray(f.getCommonSuperclass()) ||
+               Map.class.isAssignableFrom(f.getCommonSuperclass()) ||
+               Iterable.class.isAssignableFrom(f.getCommonSuperclass());
         }
 
         public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
             FieldComparator result = null;
-            if ( f.getType().isArray()) {
+            if ( f.getCommonSuperclass().isArray()) {
                 return arrayAsListComparator;
             }
             return result;
@@ -952,7 +971,7 @@ public class SmartCompare {
                 for ( final java.lang.reflect.Field f : fields) {
                     if ( ! isIgnoreField(f) ) {
                         result.add(new Field() {
-                            public Class<?> getType() {
+                            public Class<?> getCommonSuperclass() {
                                 return f.getType();
                             }
 
@@ -1120,7 +1139,7 @@ public class SmartCompare {
                     Object o1 = AbstractListIntrospector.this.o1;
                     Object o2 = AbstractListIntrospector.this.o2;
 
-                    public Class<?> getType() {
+                    public Class<?> getCommonSuperclass() {
                         return ClassUtils.getCommonSuperclass(
                             getClassAt(list1, currentIndex),
                             getClassAt(list2, currentIndex)
@@ -1138,7 +1157,7 @@ public class SmartCompare {
                         return result;
                     }
 
-                    public Object getValue(Object o) throws Exception {
+                    public Object getValue(Object o) {
                         return o == o1 ? getValueAt(list1, currentIndex) : getValueAt(list2, currentIndex);
                     }
 
@@ -1229,7 +1248,7 @@ public class SmartCompare {
                         Map o1 = MapIntrospector.this.o1;
                         Map o2 = MapIntrospector.this.o2;
 
-                        public Class<?> getType() {
+                        public Class<?> getCommonSuperclass() {
                             return getCommonSuperclass(key);
                         }
 
@@ -1248,7 +1267,7 @@ public class SmartCompare {
                             return o == null ? null : o.getClass();
                         }
 
-                        public Object getValue(Object o) throws Exception {
+                        public Object getValue(Object o) {
                             if ( o == o1) {
                                 return doGetValue(o1, key);
                             } else {
@@ -1337,46 +1356,51 @@ public class SmartCompare {
     }
 
     /**
-     * Defines how the calculator processes fields
+     * For each Field in the comparison, comparison behaviour is determined by applying a chain of rules which are
+     * bound to field paths using path-matching regular expressions. Rules are evaluated in the order they were added to the
+     * config. A rule may affect the FieldType, FieldComparator and FieldIntrospector used for a given field path.
+     * Where a rule does not need to change one of these it should simply return the result provided by the previous rule
+     * in the chain. The easy way to do this is to extend ConfigRuleBase
      */
     public static interface ConfigRule {
 
         /**
-         * @return a type which indicates whether the values for this field should be compared,
-         * whether we should introspect the values to drill down the bean graph further, or ignore them
+         * @return a type which indicates whether the values for this field should be compared, introspected or ignored
          */
-        FieldType getType(FieldType defaultType, Field f);
+        FieldType getType(FieldType lastTypeFromRuleChain, Field f);
 
         /**
-         * This method is called to obtain an EqualityComparator in cases were a FieldType is FieldType.COMPARISON
-         * @return comparator to use for Field in cases where the fields compared are not equal by reference.
+         * This method is called to obtain an FieldComparator in cases were the final result of config.getType() was
+         * FieldType.COMPARISON
          *
          * If this method returns null, the comparison objects will be considered equal if -->
          * 1- the object class implements Comparable and compareTo returns zero, or
          * 2- o1.equals(o2) returns true
+         *
+         * @return comparator to use for Field in cases where the fields compared are not equal by reference, or null.
          */
-        FieldComparator getComparator(FieldComparator defaultComparator, Field f);
+        FieldComparator getComparator(FieldComparator lastComparatorFromRuleChain, Field f);
 
 
         /**
-         * @return an introspector which is responsible for determining a list of Fields given two objects for introspection.
-         * commonSuperclass is the most specific superclass in common (which may be Object.class)
+         * This method will be called to get a FieldIntrospector for the values for Fields where the final result of
+         * config.getType() was FieldType.INTROSPECTION
+         *
+         * @return a FieldIntrospector which is responsible for determining a list of Fields given two objects for introspection.
          */
-        FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2);
+        FieldIntrospector getFieldIntrospector(FieldIntrospector lastIntrospectorFromRuleChain, String fieldPath, Class commonSuperclass, Object o1, Object o2);
 
     }
 
     /**
-     * FieldIntrospector calculates a list which contains the logical Fields for two objects
-     * which are being introspected. The objects will usually be of the same class type, so will have identical fields,
+     * FieldIntrospector calculates a list of logical Fields for two objects which are being introspected.
+     * The objects will usually be of the same class type, so will have identical fields,
      * but in some cases fields may be included in the List which are only defined for one of the two objects.
      * This may happen, for example, if the two Objects are instances of classes with a shared superclass (so have some
      * common superclass fields), but the subclasses also define their own fields (so some fields are unique to each object)
-     *
-     * The default implementation uses reflection to create a List of logical Fields which represent the java.lang.reflect.Field
-     * in the class hierarchy. Other implementations may, for example, introspect on Map classes and represent the keys/values
-     * in the map as field instances (in which case keys which are not present in both maps will be considered
-     * an 'undefined field' for the other map)
+     * In this case the field value for the object which does not support the field will be Field.UNDEFINED_FIELD_VALUE.
+     * Alternatively, for MapIntrospector for example, in which Map entries are treated as Fields, one of the maps may not
+     * contain keys which are present in the other.
      */
     public static interface FieldIntrospector {
 
@@ -1405,16 +1429,18 @@ public class SmartCompare {
         /**
          * @return class type for this field, which may be a superclass of the actual instance data
          */
-        Class<?> getType();
+        Class<?> getCommonSuperclass();
 
         /**
          * Get a value for the object provided
          * @param o, either the object1 or object2 which was provided to the FieldIntrospector which generated this Field definition
          * @return a value for this field which may be null or UNDEFINED_FIELD_VALUE if a value cannot be determined for this object
+         * @throws Exception, if an error occurs which is serious enough to abort the comparison
          */
         Object getValue(Object o) throws Exception;
 
         /**
+         * Get the name of the field, which is also the last token from the field path
          * The field names should perferably be unique per class, but duplicate names are tolerated
          * (there are cases where a superclass and subclass may have a field with the same name)
          * @return Name for this field, to be used in the difference descriptions.
