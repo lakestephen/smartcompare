@@ -633,6 +633,7 @@ public class SmartCompare {
 
     public static class Config {
 
+        private static final String[] ALL_PATHS_PATTERN = new String[] {".*"};;
         private static DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
         private static IgnoreRule IGNORE_RULE = new IgnoreRule();
         private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
@@ -734,21 +735,31 @@ public class SmartCompare {
         }
 
         public Config bindIntrospector(FieldIntrospector f, String... pathPattern) {
+            pathPattern = getDefaultPatternIfNoSpecified(pathPattern);
             bindRule(new IntrospectorRule(f), pathPattern);
             return this;
         }
 
         public Config bindComparator(FieldComparator c, String... pathPattern) {
+            pathPattern = getDefaultPatternIfNoSpecified(pathPattern);
             bindRule(new ComparatorRule(c), pathPattern);
             return this;
         }
 
         public void bindRule(ConfigRule rule, String... pathPattern) {
+            pathPattern = getDefaultPatternIfNoSpecified(pathPattern);
             for ( String pattern : pathPattern) {
                 Pattern p = Pattern.compile(pattern);
                 patternToRule.put(p, rule);
             }
             clearPathCaches();
+        }
+
+        private String[] getDefaultPatternIfNoSpecified(String... pathPattern) {
+            if ( pathPattern.length == 0) {
+                pathPattern = ALL_PATHS_PATTERN;
+            }
+            return pathPattern;
         }
 
         private void clearPathCaches() {
@@ -770,7 +781,7 @@ public class SmartCompare {
 
             public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
                 return comparator;
-            }       
+            }
         }
 
         private static class IntrospectorRule extends ConfigRuleBase {
@@ -784,7 +795,7 @@ public class SmartCompare {
                 return FieldType.INTROSPECTION;
             }
 
-            public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
+            public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class classType, Object o1, Object o2) {
                 return introspector;
             }
 
@@ -837,7 +848,7 @@ public class SmartCompare {
             return defaultComparator;
         }
 
-        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
+        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class classType, Object o1, Object o2) {
             return defaultIntrospector;
         }
     }
@@ -856,28 +867,28 @@ public class SmartCompare {
         }
 
         private boolean isIntrospectByDefault(Field f) {
-            return ClassUtils.isPrimativeOrStringArray(f.getCommonSuperclass()) ||
-               Map.class.isAssignableFrom(f.getCommonSuperclass()) ||
-               Iterable.class.isAssignableFrom(f.getCommonSuperclass());
+            return ClassUtils.isPrimativeOrStringArray(f.getClassType()) ||
+               Map.class.isAssignableFrom(f.getClassType()) ||
+               Iterable.class.isAssignableFrom(f.getClassType());
         }
 
         public FieldComparator getComparator(FieldComparator defaultComparator, Field f) {
             FieldComparator result = null;
-            if ( f.getCommonSuperclass().isArray()) {
+            if ( f.getClassType().isArray()) {
                 return arrayAsListComparator;
             }
             return result;
         }
 
-        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class commonSuperclass, Object o1, Object o2) {
+        public FieldIntrospector getFieldIntrospector(FieldIntrospector defaultIntrospector, String path, Class classType, Object o1, Object o2) {
             FieldIntrospector result;
-            if ( Map.class.isAssignableFrom(commonSuperclass) ) {
+            if ( Map.class.isAssignableFrom(classType) ) {
                 result = mapIntrospector;
-            } else if (Set.class.isAssignableFrom(commonSuperclass)) {
-                result = SortedSet.class.isAssignableFrom(commonSuperclass) ? iterableIntrospector : unsortedSetIntrospector;
-            } else if (Iterable.class.isAssignableFrom(commonSuperclass)){
+            } else if (Set.class.isAssignableFrom(classType)) {
+                result = SortedSet.class.isAssignableFrom(classType) ? iterableIntrospector : unsortedSetIntrospector;
+            } else if (Iterable.class.isAssignableFrom(classType)){
                 result = iterableIntrospector;
-            } else if (commonSuperclass.isArray()) {
+            } else if (classType.isArray()) {
                 result = arrayIntrospector;
             } else {
                 //an introspector which includes differences for fields which are only present in one of the two input objects
@@ -996,7 +1007,7 @@ public class SmartCompare {
                 for ( final java.lang.reflect.Field f : fields) {
                     if ( ! isIgnoreField(f) ) {
                         result.add(new Field() {
-                            public Class<?> getCommonSuperclass() {
+                            public Class<?> getClassType() {
                                 return f.getType();
                             }
 
@@ -1157,14 +1168,14 @@ public class SmartCompare {
             for (int loop=0; loop < maxSize; loop++) {
                 final int currentIndex = loop;
                 Field f = new Field() {
-                    //need to copy the field state from the enclosing class, which will have 
+                    //need to copy the field state from the enclosing class, which will have
                     //its state cleared during cleanIntrospector()
                     List list1 = AbstractListIntrospector.this.list1;
                     List list2 = AbstractListIntrospector.this.list2;
                     Object o1 = AbstractListIntrospector.this.o1;
                     Object o2 = AbstractListIntrospector.this.o2;
 
-                    public Class<?> getCommonSuperclass() {
+                    public Class<?> getClassType() {
                         return ClassUtils.getCommonSuperclass(
                             getClassAt(list1, currentIndex),
                             getClassAt(list2, currentIndex)
@@ -1273,7 +1284,7 @@ public class SmartCompare {
                         Map o1 = MapIntrospector.this.o1;
                         Map o2 = MapIntrospector.this.o2;
 
-                        public Class<?> getCommonSuperclass() {
+                        public Class<?> getClassType() {
                             return getCommonSuperclass(key);
                         }
 
@@ -1411,9 +1422,10 @@ public class SmartCompare {
          * This method will be called to get a FieldIntrospector for the values for Fields where the final result of
          * config.getType() was FieldType.INTROSPECTION
          *
+         * @param classType, class of the Objects to compare, or the most specific common superclass
          * @return a FieldIntrospector which is responsible for determining a list of Fields given two objects for introspection.
          */
-        FieldIntrospector getFieldIntrospector(FieldIntrospector lastIntrospectorFromRuleChain, String fieldPath, Class commonSuperclass, Object o1, Object o2);
+        FieldIntrospector getFieldIntrospector(FieldIntrospector lastIntrospectorFromRuleChain, String fieldPath, Class classType, Object o1, Object o2);
 
     }
 
@@ -1454,7 +1466,7 @@ public class SmartCompare {
         /**
          * @return class type for this field, which may be a superclass of the actual instance data
          */
-        Class<?> getCommonSuperclass();
+        Class<?> getClassType();
 
         /**
          * Get a value for the object provided

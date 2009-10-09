@@ -775,6 +775,44 @@ public class TestSmartCompare extends TestCase {
         ));
     }
 
+    public void testUseAllPathsPatternWhenBindingRulesIfNotSpecified() {
+        t1 = new TestFieldDifferenceBean(10d, "test", Color.RED);
+        t2 = new TestFieldDifferenceBean(5d, "test2", Color.BLACK);
+
+        //bind a compartor without specifying any paths, it is bound to ".*"
+        SmartCompare c = new SmartCompare().bindComparator(new SmartCompare.FieldComparator() {
+            public boolean isEqual(SmartCompare.Field field, Object object1, Object object2) {
+                return ! field.getName().equals("stringField");
+            }
+        });
+        differences = c.getDifferences(t1, t2);
+
+        checkDifferences(newValueDifference(
+            "stringField",
+            "object1:[test] object2:[test2]",
+            "test",
+            "test2"
+        ));
+
+        //bind an introspector without specifing path - all paths are introspected
+        c = new SmartCompare().bindIntrospector(new SmartCompare.FieldIntrospector() {
+            public List<SmartCompare.Field> getFields(String pathPrefix, Class commonSuperclass, Object object1, Object object2) {
+                return new ArrayList<SmartCompare.Field>();
+            }
+        });
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+
+        //bind a rule without specifiying path, rule applies to ".*", ignore all fields
+        c = new SmartCompare().bindRule(new SmartCompare.ConfigRuleBase() {
+            public SmartCompare.FieldType getType(SmartCompare.FieldType defaultType, SmartCompare.Field f) {
+                return SmartCompare.FieldType.IGNORE;
+            }
+        });
+        differences = c.getDifferences(t1, t2);
+        checkDifferences();
+    }
+
     private void checkDifferences(SmartCompare.Difference... diffs) {
         List<SmartCompare.Difference> expectedDifferences = Arrays.asList(diffs);
         int maxDiffs = Math.max(expectedDifferences.size(), differences.size());
