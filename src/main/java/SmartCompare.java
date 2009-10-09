@@ -633,7 +633,7 @@ public class SmartCompare {
 
     public static class Config {
 
-        private static final String[] ALL_PATHS_PATTERN = new String[] {".*"};;
+        private static final String[] ALL_PATHS_PATTERN = new String[] {".*"};
         private static DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
         private static IgnoreRule IGNORE_RULE = new IgnoreRule();
         private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
@@ -672,10 +672,14 @@ public class SmartCompare {
         }
 
         public FieldComparator getComparator(Field f) {
-            FieldComparator comparator = pathToComparator.get(f.getPath());
-            if ( comparator == null) {
+            FieldComparator comparator;
+            //note that the map may contain a null comparator value for the key, which may be the correct result
+            //we have to check if the key exists when deciding whether to apply the rules, not for null
+            if (! pathToComparator.containsKey(f.getPath())) {
                 comparator = getComparatorFromRules(f);
                 pathToComparator.put(f.getPath(), comparator);
+            } else {
+                comparator = pathToComparator.get(f.getPath());
             }
             return comparator;
         }
