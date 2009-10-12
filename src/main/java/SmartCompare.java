@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -634,10 +635,12 @@ public class SmartCompare {
     public static class Config {
 
         private static final String[] ALL_PATHS_PATTERN = new String[] {".*"};
-        private static DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
-        private static IgnoreRule IGNORE_RULE = new IgnoreRule();
-        private static IntrospectRule INTROSPECT_RULE = new IntrospectRule();
-        private static CompareRule COMPARE_RULE = new CompareRule();
+
+        //these rules must not be static, they may cache state applicable to one comparison
+        private DefaultConfigRule DEFAULT_RULE = new DefaultConfigRule();
+        private IgnoreRule IGNORE_RULE = new IgnoreRule();
+        private IntrospectRule INTROSPECT_RULE = new IntrospectRule();
+        private CompareRule COMPARE_RULE = new CompareRule();
 
         private LinkedHashMap<Pattern, ConfigRule> patternToRule = new LinkedHashMap<Pattern, ConfigRule>();
 
@@ -1004,12 +1007,62 @@ public class SmartCompare {
 
      public static abstract class ReflectionFieldIntrospector extends AbstractFieldIntrospector {
 
+         private Map<CacheKey, List<Field>> resultCache = new HashMap<CacheKey, List<Field>>();
+
+         //the cache needs to take into account path and both classes
+         //In the event that the path references objects in a Map or collection, for example,
+         //the object classes may differ from invocation to invocation
+         private class CacheKey {
+             String path;
+             Class c1, c2;
+
+             @Override
+             public boolean equals(Object o) {
+                 if (this == o) return true;
+                 if (o == null || getClass() != o.getClass()) return false;
+
+                 CacheKey cacheKey = (CacheKey) o;
+
+                 if (c1 != null ? !c1.equals(cacheKey.c1) : cacheKey.c1 != null) return false;
+                 if (c2 != null ? !c2.equals(cacheKey.c2) : cacheKey.c2 != null) return false;
+                 if (path != null ? !path.equals(cacheKey.path) : cacheKey.path != null) return false;
+
+                 return true;
+             }
+
+             @Override
+             public int hashCode() {
+                 int result = path != null ? path.hashCode() : 0;
+                 result = 31 * result + (c1 != null ? c1.hashCode() : 0);
+                 result = 31 * result + (c2 != null ? c2.hashCode() : 0);
+                 return result;
+             }
+         }
+
+         private CacheKey currentKey = new CacheKey();
+
+         protected List<Field> getCachedFieldsResult(String path, Class commonSuperclass, Object object1, Object object2) {
+             currentKey.path = path;
+             currentKey.c1 = object1.getClass();
+             currentKey.c2 = object2.getClass();
+             return resultCache.get(currentKey);
+         }
+
+         protected void storeCachedFieldsResult(List<Field> result, String path, Class commonSuperclass, Object object1, Object object2) {
+             CacheKey c = new CacheKey();
+             c.path = path;
+             c.c1 = object1.getClass();
+             c.c2 = object2.getClass();
+             resultCache.put(c, result);
+         }
+
          //find all the fields for this class and superclasses
          protected void addFieldsRecursivelyUntilReachingClass(List<Field> result, Class c, Class endClass) {
             if ( c != endClass ) {
                 java.lang.reflect.Field[] fields = c.getDeclaredFields();
                 for ( final java.lang.reflect.Field f : fields) {
                     if ( ! isIgnoreField(f) ) {
+                        final String path =  ReflectionFieldIntrospector.this.getPath(f.getName());
                         result.add(new Field() {
                             public Class<?> getClassType() {
                                 return f.getType();
@@ -1027,7 +1080,7 @@ public class SmartCompare {
                             }
 
                             public String getPath() {
-                                return ReflectionFieldIntrospector.this.getPath(f.getName());
+                                return path;
                             }
                         });
                     }
@@ -1058,11 +1111,22 @@ public class SmartCompare {
         }
 
         public final List<Field> getFields(String path, Class commonSuperclass, Object object1, Object object2) {
-            setIntrospectorPath(path);
-            prepareIntrospector(path, commonSuperclass, object1, object2);
-            List<Field> result = doGetFields();
-            clearIntrospector();
+            List<Field> result = getCachedFieldsResult(path, commonSuperclass, object1, object2);
+            if ( result == null) {
+                setIntrospectorPath(path);
+                prepareIntrospector(path, commonSuperclass, object1, object2);
+                result = doGetFields();
+                clearIntrospector();
+                storeCachedFieldsResult(result, path, commonSuperclass, object1, object2);
+            }
             return result;
+        }
+
+        protected void storeCachedFieldsResult(List<Field> result, String path, Class commonSuperclass, Object object1, Object object2) {
+        }
+
+        protected List<Field> getCachedFieldsResult(String path, Class commonSuperclass, Object object1, Object object2) {
+            return null;
         }
 
         //called before getFields to allow the introspector to initialize required values
