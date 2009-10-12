@@ -11,40 +11,45 @@ import java.util.regex.Pattern;
  * Time: 13:38:06
  *
  * SmartCompare is a utility which compares two Objects to get (or print) a list of differences.
+ * The comparison may be peformed at top level only, or may introspect the object reference graph to find differences
  *
- * A FieldIntrospector is used to find a list of Fields for the comparison.
- * Usually, a value comparison is performed for each Field identified (using reference equality, a configurable FieldComparator,
- * Comparable.compareTo() or Object.equals() to determine whether values differ).
- * You can also specify that a Field should be ignored, or its values should be introspected further, generating another
- * list of Fields to compare for the two values identified.
+ * When two objects are compared, a FieldIntrospector is used to find a list of Fields for the comparison.
+ * For each Field identified, one of three actions may take place:
+ * - the values for that field may be compared (using reference equality, a configurable FieldComparator, Comparable.compareTo() or Object.equals()).
+ * - the values for that field may be introspected, producing another list of Fields
+ * - the Field may be ignored.
  *
- * The meaning of 'Field' is this context is flexible - a 'Field' does not necessarily imply a field on a class
- * at language level, although the default FieldIntrospector does use reflection to find the fields defined by the
- * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
- * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
- * being compared are Maps - in this case the fields are identified by the keys in the Map.
+ * You can configure this behaviour based by adding ConfigRules to a SmartCompare instance. These rules may apply globally, or
+ * may be bound to specific paths through the reference graph. When you add a ConfigRule, you can specify a path matching regular expression.
+ * For example, if a class 'Category', representing a category hieararchy, defines Fields for
+ * 'categoryName' and 'parent', you could bind a rule to apply to the categoryName of the grandparent Category using the path
+ * 'parent.parent.categoryName', or to any categoryName using '.*categoryName'
  *
- * You can configure comparison behaviour based on the path through the reference graph, where each token is
- * a field name. This is done by binding ConfigRule to paths, by specifying a path matching regular expression.
- * For example, if a class 'Category', representing a hieararchy of categories, defines Fields for
- * 'categoryName' and 'parent', you could bind a rule to apply to the name of the grandparent Category using the path
- * 'parent.parent.categoryName'
- *
- * You can bind a rule directly using new SmartCompare().bindRule(myRule, myPathExpression).
- * There are shorthand ways to bind rule using the methods smartCompare.ignorePaths(), introspectPaths(),
+ * You can bind a rule by calling smartCompare.bindRule(myRule, myPathExpression).
+ * There are also shorthand ways to bind standard rule types using the methods smartCompare.ignorePaths(), introspectPaths(),
  * bindIntrospector(), comparePaths() and bindComparator()
  *
- * If you wanted to compare two categories up the Category tree recursively, considering the Fields of each parent, you
- * would need to tell SmartCompare to introspect the parent Field:
+ * The meaning of 'Field' within SmartCompare is flexible - a 'Field' does not necessarily imply a field on a class
+ * at language level, although the default FieldIntrospector does indeed use reflection to find the fields defined by the
+ * classes of the objects being compared. SmartCompare has it's own FieldIntrospector and Field abstractions which
+ * allow a list of Fields to be determined in other ways: For example, the MapIntrospector can be used where the objects
+ * being compared are Maps - in this case the fields are identified by the keys in the Maps.
+ *
+ * Default ConfigRules are provided which implement a basic comparison, in which most fields are compared at top level
+ * (the exception here is for Collection classes and arrays, which are introspected by default). If you want to perform
+ * introspection on certain fields, you need to configure this.
+ *
+ * For example, going back to the Category example - if you wanted to compare two categories up the Category tree recursively, you
+ * would need to tell SmartCompare to introspect each 'parent' Field:
  * new SmartCompare().introspectPaths(".*parent");   //introspect any path ending in parent
  * s.printDifferences(cat1, cat2)
  *
- * If you also wanted to set a FieldComparator for the grandparent 'name' field which ignored case, you could create a class
- * IgnoreCaseComparator, and bind the following rules:
- * new SmartCompare().introspectPaths(".*parent").bindComparator(new IgnoreCaseComparator(), "parent.parent.name");
+ * If you also wanted to set a FieldComparator for 'categoryName' field which ignored case for the grandparent name only,
+ * you could create a class IgnoreCaseComparator, and bind that rule additionally:
+ * new SmartCompare().introspectPaths(".*parent").bindComparator(new IgnoreCaseComparator(), "parent.parent.categoryName");
  * s.getDifferences(cat1, cat2);
  *
- * You can also ignore Fields based on path. Given two objects of the following class Category, the following comparison
+ * You can also ignore Fields based on path rules. Given two objects of the following class Category, the following comparison
  * would find differences in category 'name' up the category hierarchy, but would ignore differences in 'priority'
  * class Category {
  *   String name;
