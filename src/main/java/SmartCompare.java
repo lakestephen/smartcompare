@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * Time: 13:38:06
  *
  * SmartCompare is a utility which compares two Objects to get (or print) a list of differences.
- * The comparison may be peformed at top level only, or may introspect the object reference graph to find differences
+ * The comparison may be peformed at top level only, or may introspect down the graph of object references to find differences
  *
  * When two objects are compared, a FieldIntrospector is used to find a list of Fields for the comparison.
  * For each Field identified, one of three actions may take place:
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * (the exception here is for Collection classes and arrays, which are introspected by default). If you want to perform
  * introspection on certain fields, you need to configure this.
  *
- * For example, going back to the Category example - if you wanted to compare two categories up the Category tree recursively, you
+ * Going back to the Category example - if you wanted to compare two categories up the Category tree recursively, you
  * would need to tell SmartCompare to introspect each 'parent' Field:
  * new SmartCompare().introspectPaths(".*parent");   //introspect any path ending in parent
  * s.printDifferences(cat1, cat2)
