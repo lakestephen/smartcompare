@@ -978,39 +978,7 @@ public class SmartCompare {
         }
     }
 
-    /*
-    * This introspector uses reflection to find fields for two objects which are of identical class
-    * If the class type differs no fields will be returned
-    */
-    public static class IdenticalClassFieldIntrospector extends ReflectionFieldIntrospector {
-
-        private Class commonSuperclass;
-        private Class o1;
-        private Class o2;
-
-        protected void prepareIntrospector(String path, Class commonSuperclass, Object o1, Object o2) {
-            this.commonSuperclass = commonSuperclass;
-            this.o1 = o1.getClass();
-            this.o2 = o2.getClass();
-        }
-
-        protected void clearIntrospector() {
-            commonSuperclass = null;
-            o1 = null;
-            o2 = null;
-        }
-
-        protected List<Field> doGetFields() {
-            List<Field> result = new ArrayList<Field>();
-            //only introspect fields if the two objects are exactly the same class type, no subclasses
-            if ( o1 == o2 && o1 == commonSuperclass ) {
-                addFieldsRecursivelyUntilReachingClass(result, commonSuperclass, Object.class);
-            }
-            return result;
-        }
-    }
-
-     public static abstract class ReflectionFieldIntrospector extends AbstractFieldIntrospector {
+    public static abstract class ReflectionFieldIntrospector extends AbstractFieldIntrospector {
 
          private Map<CacheKey, List<Field>> resultCache = new HashMap<CacheKey, List<Field>>();
 
