@@ -12,7 +12,7 @@ public interface LogMethods {
 
     void info(String s);
 
-    void error(String description, Exception cause);
+    void error(String description, Throwable cause);
 
     void error(String description);
 
@@ -27,7 +27,7 @@ public interface LogMethods {
             System.out.println("Configuration --> INFO " + s);
         }
 
-        public void error(String description, Exception cause) {
+        public void error(String description, Throwable cause) {
             System.err.println("Configuration --> ERROR " + description + " " + cause);
             cause.printStackTrace();
         }
