@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project relativePaths="false" version="4">
+<project version="4">
   <component name="ChangeListManager">
-    <list default="true" readonly="true" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/SmartCompare.java" afterPath="$PROJECT_DIR$/src/main/java/SmartCompare.java" />
+    <list default="true" readonly="true" id="e5d5a8b5-eaa2-486c-bd30-d41a0c2a93f6" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/od-microutils.iws" afterPath="$PROJECT_DIR$/od-microutils.iws" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/od-microutils.iml" afterPath="$PROJECT_DIR$/od-microutils.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/od-microutils.ipr" afterPath="$PROJECT_DIR$/od-microutils.ipr" />
     </list>
     <ignored path=".idea/workspace.xml" />
+    <ignored path="$USER_HOME_GRAILS$/" />
+    <ignored path="$USER_HOME_GRIFFON$/" />
     <ignored path="od-microutils.iws" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
+    <SUITE FILE_PATH="coverage/od-microutils$All_Tests..es" NAME="All Tests Coverage Results" MODIFIED="1254996173536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$All_tests_with_coverage.ic" NAME="All tests with coverage Coverage Results" MODIFIED="1254757644951" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="true" />
+    <SUITE FILE_PATH="coverage/od-microutils$TestSmartCompare_testSuperclassIntrospectorOnBeanField..es" NAME="TestSmartCompare.testSuperclassIntrospectorOnBeanField Coverage Results" MODIFIED="1254907417263" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/od-microutils$All_tests_with_coverage..es" NAME="All tests with coverage Coverage Results" MODIFIED="1254757895329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$All_in_od_microutils..es" NAME="All in od-microutils Coverage Results" MODIFIED="1254854012037" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/od-microutils$TestSmartCompare..es" NAME="TestSmartCompare Coverage Results" MODIFIED="1254850501179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/od-microutils$TestSmartCompare_testSuperclassIntrospectorOnBeanField..es" NAME="TestSmartCompare.testSuperclassIntrospectorOnBeanField Coverage Results" MODIFIED="1254907417263" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/od-microutils$All_Tests..es" NAME="All Tests Coverage Results" MODIFIED="1254996173536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/od-microutils$All_tests_with_coverage..es" NAME="All tests with coverage Coverage Results" MODIFIED="1254757895329" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="emma" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -78,95 +86,184 @@
   <component name="FavoritesManager">
     <favorites_list name="od-microutils" />
   </component>
+  <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="SmartCompare.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="SmartCompare.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/SmartCompare.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="825" column="38" selection-start="33690" selection-end="33690" vertical-scroll-proportion="0.66930693">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Appendable.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Appendable.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="39" column="78" selection-start="1397" selection-end="1397" vertical-scroll-proportion="-14.111111">
+            <state line="30" column="57" selection-start="1540" selection-end="1540" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Color.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/awt/Color.java">
+      <file leaf-file-name="MigrationSource.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/MigrationSource.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="13" selection-start="1585" selection-end="1585" vertical-scroll-proportion="118.888885">
+            <state line="11" column="17" selection-start="183" selection-end="183" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="NativeMethodAccessorImpl.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="intellijad://intellijad/sun/reflect/NativeMethodAccessorImpl.java">
+      <file leaf-file-name="NullMigrationStrategy.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/NullMigrationStrategy.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+            <state line="5" column="13" selection-start="41" selection-end="41" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestCategoryExample.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/TestCategoryExample.java">
+      <file leaf-file-name="Migration.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/Migration.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="41.68">
+            <state line="8" column="19" selection-start="129" selection-end="129" vertical-scroll-proportion="-5.6666665">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ConcurrentHashMap.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/concurrent/ConcurrentHashMap.java">
+      <file leaf-file-name="Migrations.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/Migrations.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="845" column="0" selection-start="31632" selection-end="31632" vertical-scroll-proportion="-7.0555553">
+            <state line="15" column="35" selection-start="301" selection-end="301" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Class.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Class.java">
+      <file leaf-file-name="UrlMigrationLoader.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/UrlMigrationLoader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="631" column="35" selection-start="26238" selection-end="26238" vertical-scroll-proportion="-11.611111">
+            <state line="48" column="18" selection-start="1412" selection-end="1412" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TestSmartCompare.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/TestSmartCompare.java">
+      <file leaf-file-name="XsltMigrationStrategy.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/XsltMigrationStrategy.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="16" selection-start="315" selection-end="315" vertical-scroll-proportion="0.0">
+            <state line="43" column="61" selection-start="1750" selection-end="1750" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Matcher.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/regex/Matcher.java">
+      <file leaf-file-name="BeanPersistenceSerializer.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/BeanPersistenceSerializer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="83" column="36" selection-start="3743" selection-end="3743" vertical-scroll-proportion="-0.9444444">
+            <state line="14" column="61" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DemoSmartCompare.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/DemoSmartCompare.java">
+      <file leaf-file-name="ByteArrayOutputStream.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/io/ByteArrayOutputStream.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="10" column="13" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
+            <state line="172" column="18" selection-start="5370" selection-end="5370" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigManager.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigManager.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="88" column="50" selection-start="2729" selection-end="2729" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigSerializer.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSerializer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="14" column="0" selection-start="273" selection-end="273" vertical-scroll-proportion="0.2319688">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="LogMethods.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/LogMethods.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="17" selection-start="131" selection-end="131" vertical-scroll-proportion="-5.6666665">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigSink.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSink.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="10" column="3" selection-start="138" selection-end="223" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigSource.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSource.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="22" column="0" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="FileSourceAndSink.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/FileSourceAndSink.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="81" column="51" selection-start="3485" selection-end="3485" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Stack.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/util/Stack.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="56" column="26" selection-start="1712" selection-end="1712" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Vector.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/util/Vector.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="843" column="32" selection-start="30892" selection-end="30892" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigData.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigData.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="13" selection-start="127" selection-end="127" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ConfigMigrationStategy.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigMigrationStategy.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="0" selection-start="110" selection-end="110" vertical-scroll-proportion="-5.6666665">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="XPathMigrationStrategy.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/config/XPathMigrationStrategy.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="27" column="13" selection-start="813" selection-end="813" vertical-scroll-proportion="-6.375">
               <folding />
             </state>
           </provider>
@@ -179,12 +276,31 @@
       <setting name="OPEN_NEW_TAB" value="false" />
     </FindUsagesManager>
   </component>
+  <component name="Git.Settings">
+    <option name="GIT_EXECUTABLE" value="C:\cygwin\bin\git.exe" />
+    <option name="CHECKOUT_INCLUDE_TAGS" value="false" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="changedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/src/main/java/config/ConfigMigrationStategy.java" />
+        <option value="$PROJECT_DIR$/src/main/java/config/Migrations.java" />
+        <option value="$PROJECT_DIR$/src/main/java/config/ConfigSink.java" />
+        <option value="$PROJECT_DIR$/src/main/java/config/ConfigSource.java" />
+      </list>
+    </option>
+  </component>
   <component name="MavenRunner">
     <option name="jreName" value="#JAVA_INTERNAL" />
   </component>
   <component name="ModuleEditorState">
     <option name="LAST_EDITED_MODULE_NAME" />
     <option name="LAST_EDITED_TAB_NAME" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state />
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager">
     <OptionsSetting value="true" id="Add" />
@@ -203,18 +319,112 @@
     <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="0.5" version="1" splitterProportion="0.5">
+    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
       <flattenPackages />
       <showMembers />
       <showModules />
       <showLibraryContents />
       <hideEmptyPackages />
       <abbreviatePackageNames />
-      <showStructure ProjectPane="false" />
       <autoscrollToSource />
       <autoscrollFromSource />
       <sortByType />
     </navigator>
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="test" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="od-microutils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="config" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Favorites" />
+      <pane id="Scope" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="GoToFile.includeJavaFiles" value="false" />
@@ -222,56 +432,35 @@
     <property name="project.structure.proportion" value="0.0" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="RunManagerConfig.showSettingsBeforeRunnig" value="false" />
+    <property name="recentsLimit" value="5" />
     <property name="options.lastSelected" value="MavenSettings" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="dynamic.classpath" value="false" />
-    <property name="options.searchVisible" value="true" />
     <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="options.searchVisible" value="true" />
+    <property name="dynamic.classpath" value="false" />
   </component>
   <component name="RunManager" selected="JUnit.All Tests">
-    <tempConfiguration default="false" name="TestSmartCompare.testBindRuleProcessingOrder" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
-      <module name="od-microutils" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" value="" />
-      <option name="MAIN_CLASS_NAME" value="TestSmartCompare" />
-      <option name="METHOD_NAME" value="testBindRuleProcessingOrder" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs />
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Make" value="true" />
-      </method>
-    </tempConfiguration>
     <configuration default="true" type="Remote" factoryName="Remote">
       <option name="USE_SOCKET_TRANSPORT" value="true" />
       <option name="SERVER_MODE" value="false" />
       <option name="SHMEM_ADDRESS" value="javadebug" />
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
     </configuration>
-    <configuration default="true" type="SpecsRunConfiguration" factoryName="Specs">
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-    </configuration>
-    <configuration default="true" type="TestNG" factoryName="TestNG" enabled="false" merge="false" runner="emma">
+    <configuration default="true" type="TestNG" factoryName="TestNG">
+      <extension name="coverage" enabled="false" merge="false" runner="emma" />
+      <extension name="snapshooter" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -288,14 +477,20 @@
       <option name="ANNOTATION_TYPE" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
       </option>
+      <option name="USE_DEFAULT_REPORTERS" value="false" />
       <option name="PROPERTIES_FILE" />
       <envs />
       <properties />
       <listeners />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
     </configuration>
     <configuration default="true" type="Applet" factoryName="Applet">
       <module name="" />
@@ -308,8 +503,16 @@
       <option name="VM_PARAMETERS" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
     </configuration>
-    <configuration default="true" type="Application" factoryName="Application" enabled="false" merge="false" runner="emma">
+    <configuration default="true" type="Application" factoryName="Application">
+      <extension name="coverage" enabled="false" merge="false" runner="emma" />
+      <extension name="snapshooter" />
       <option name="MAIN_CLASS_NAME" />
       <option name="VM_PARAMETERS" />
       <option name="PROGRAM_PARAMETERS" />
@@ -321,8 +524,16 @@
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="" />
       <envs />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
     </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" runner="emma" />
+      <extension name="snapshooter" />
       <module name="" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -335,20 +546,20 @@
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
       </option>
       <envs />
+      <method>
+        <option name="AntTarget" enabled="false" />
+        <option name="BuildArtifacts" enabled="false" />
+        <option name="Make" enabled="true" />
+        <option name="Maven.BeforeRunTask" enabled="false" />
+      </method>
     </configuration>
-    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="package" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-    </configuration>
-    <configuration default="false" name="All Tests" type="JUnit" factoryName="JUnit" enabled="true" merge="false" sample_coverage="true" runner="emma">
+    <configuration default="false" name="All Tests" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="true" merge="false" sample_coverage="true" runner="emma" />
+      <extension name="snapshooter" />
       <module name="od-microutils" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
@@ -361,7 +572,6 @@
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
       </option>
@@ -371,11 +581,11 @@
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Make" value="true" />
-      </method>
+      <method />
     </configuration>
-    <configuration default="false" name="TestCategoryExample" type="JUnit" factoryName="JUnit" enabled="false" merge="false" runner="emma">
+    <configuration default="false" name="TestCategoryExample" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" runner="emma" />
+      <extension name="snapshooter" />
       <module name="od-microutils" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" />
@@ -388,21 +598,17 @@
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="ADDITIONAL_CLASS_PATH" />
       <option name="TEST_SEARCH_SCOPE">
         <value defaultName="moduleWithDependencies" />
       </option>
       <envs />
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
-      <method>
-        <option name="Make" value="true" />
-      </method>
+      <method />
     </configuration>
-    <list size="3">
+    <list size="2">
       <item index="0" class="java.lang.String" itemvalue="JUnit.All Tests" />
-      <item index="1" class="java.lang.String" itemvalue="JUnit.TestCategory" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.TestSmartCompare.testBindRuleProcessingOrder" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.TestCategoryExample" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -410,12 +616,7 @@
     </configuration>
   </component>
   <component name="ShelveChangesManager" show_recycled="false" />
-  <component name="StructureViewFactory">
-    <option name="AUTOSCROLL_MODE" value="true" />
-    <option name="AUTOSCROLL_FROM_SOURCE" value="false" />
-    <option name="ACTIVE_ACTIONS" value="" />
-  </component>
-  <component name="SvnConfiguration">
+  <component name="SvnConfiguration" maxAnnotateRevisions="500">
     <option name="USER" value="" />
     <option name="PASSWORD" value="" />
     <option name="LAST_MERGED_REVISION" />
@@ -424,9 +625,38 @@
     <option name="MERGE_DIFF_USE_ANCESTRY" value="true" />
     <option name="UPDATE_LOCK_ON_DEMAND" value="false" />
     <option name="IGNORE_SPACES_IN_MERGE" value="false" />
-    <configuration useDefault="true">O:\AppsData\Subversion</configuration>
+    <option name="DETECT_NESTED_COPIES" value="true" />
+    <option name="CHECK_NESTED_FOR_QUICK_MERGE" value="false" />
+    <option name="IGNORE_SPACES_IN_ANNOTATE" value="true" />
+    <option name="SHOW_MERGE_SOURCES_IN_ANNOTATE" value="true" />
+    <configuration useDefault="true">C:\Users\nick\AppData\Roaming\Subversion</configuration>
     <myIsUseDefaultProxy>false</myIsUseDefaultProxy>
     <supportedVersion>125</supportedVersion>
+  </component>
+  <component name="SvnFileUrlMappingImpl">
+    <option name="myMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="C:\dev\OD\trunk\od-projects\od-microutils" />
+          <option name="myCopyRoot" value="C:\dev\OD\trunk\od-projects\od-microutils" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+    <option name="myMoreRealMappingRoots">
+      <list>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="C:\dev\OD\trunk\od-projects\od-microutils" />
+          <option name="myCopyRoot" value="C:\dev\OD\trunk\od-projects\od-microutils" />
+        </SvnCopyRootSimple>
+      </list>
+    </option>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <created>1290079926179</created>
+      <updated>1290079926179</updated>
+    </task>
+    <servers />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -449,47 +679,47 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1280" height="962" extended-state="0" />
-    <editor active="true" />
+    <frame x="0" y="0" width="2560" height="1570" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24990052" sideWeight="0.5397536" order="1" side_tool="false" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22710623" sideWeight="0.5" order="1" side_tool="false" />
-      <window_info id="IntelliJad Console" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28257328" sideWeight="0.6556777" order="9" side_tool="false" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5885226" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="IDEtalk" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.13667335" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4029304" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20602606" sideWeight="0.71794873" order="1" side_tool="false" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.40716612" sideWeight="0.8998779" order="0" side_tool="false" />
-      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2735043" sideWeight="0.5" order="2" side_tool="false" />
-      <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" />
-      <window_info id="PMD" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26150122" sideWeight="0.5" order="12" side_tool="false" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" />
-      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" />
-      <window_info id="Structure101" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31840193" sideWeight="0.5" order="11" side_tool="false" />
-      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32829288" sideWeight="0.5" order="7" side_tool="false" />
-      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" />
-      <window_info id="Profile" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.7457627" sideWeight="0.5" order="10" side_tool="false" />
-      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" />
-      <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" />
-      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" />
-      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35468563" sideWeight="0.5" order="5" side_tool="false" />
-      <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" />
+      <window_info id="Data Sources" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22653493" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24990052" sideWeight="0.5397536" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5885226" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="IDEtalk" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.13667335" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.20569366" sideWeight="0.71794873" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.40697673" sideWeight="0.76852506" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.27310634" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="PMD" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26150122" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Color Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Dataflow to this" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure101" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31840193" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32829288" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="File View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Profile" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.7457627" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="IntelliJad Console" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.28257328" sideWeight="0.6556777" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4029304" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Module Dependencies" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="CVS" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35468563" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Web Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Duplicates" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
@@ -500,9 +730,15 @@
     <option name="PERFORM_EDIT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_CHECKOUT_IN_BACKGROUND" value="true" />
     <option name="PERFORM_ADD_REMOVE_IN_BACKGROUND" value="true" />
+    <option name="PERFORM_ROLLBACK_IN_BACKGROUND" value="false" />
+    <option name="CHECK_LOCALLY_CHANGED_CONFLICTS_IN_BACKGROUND" value="false" />
+    <option name="ENABLE_BACKGROUND_PROCESSES" value="false" />
+    <option name="CHANGED_ON_SERVER_INTERVAL" value="60" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="LAST_COMMIT_MESSAGE" />
+    <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="REFORMAT_BEFORE_FILE_COMMIT" value="false" />
     <option name="FILE_HISTORY_DIALOG_COMMENTS_SPLITTER_PROPORTION" value="0.8" />
@@ -525,342 +761,172 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/beans/BeanInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="75" column="19" selection-start="2963" selection-end="2963" vertical-scroll-proportion="0.0">
-          <folding>
-            <marker date="1213053930000" expanded="false" signature="0:172" placeholder="/.../" />
-            <marker date="1213053930000" expanded="true" signature="195:1315" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="1350:1644" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="1694:1961" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="2018:2327" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="2365:2943" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="3000:3363" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="3404:3680" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="3733:4277" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="4323:5307" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="5360:5421" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="5470:5531" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="5580:5646" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="5694:5760" placeholder="/**...*/" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/beans/PropertyDescriptor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="420" column="12" selection-start="13723" selection-end="13723" vertical-scroll-proportion="0.0">
-          <folding>
-            <marker date="1213053932000" expanded="false" signature="0:182" placeholder="/.../" />
-            <marker date="1213053932000" expanded="false" signature="212:308" placeholder="..." />
-            <marker date="1213053932000" expanded="true" signature="310:424" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="960:1724" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="1828:1948" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="1954:2661" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="2814:3622" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="3628:4191" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="4314:4525" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="4531:4922" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="4974:5213" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="5260:5309" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="5348:5398" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="5404:5621" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="5669:6815" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="6821:6956" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="7053:7418" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="7424:7646" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="7695:8760" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="8766:8904" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="9003:9375" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="9413:9462" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="9501:9551" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="9557:9638" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="9669:9830" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="9836:10026" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="10056:10078" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="10084:10279" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="10320:10348" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="10354:10566" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="10602:10630" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="10636:10859" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="10912:10952" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="10959:11291" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="11361:11432" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="11438:11849" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="11895:11952" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="11958:12492" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="12553:13200" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="13207:13518" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="13557:14325" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="14331:14566" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="14614:14848" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="14854:15171" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="15239:17121" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="17301:17647" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="17653:17999" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="18105:19028" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="19035:19244" placeholder="/**...*/" />
-            <marker date="1213053932000" expanded="true" signature="19271:20037" placeholder="{...}" />
-            <marker date="1213053932000" expanded="true" signature="20119:20211" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/reflect/Method.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="139" column="16" selection-start="5149" selection-end="5149" vertical-scroll-proportion="0.0">
-          <folding>
-            <marker date="1213053940000" expanded="false" signature="0:170" placeholder="/.../" />
-            <marker date="1213053940000" expanded="false" signature="207:716" placeholder="..." />
-            <marker date="1213053940000" expanded="true" signature="718:1493" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="3093:3112" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="3183:3286" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="3378:3645" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="3651:3849" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="4197:4648" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="4654:4841" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="4860:5683" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="5689:5861" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="5902:5924" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="5930:6061" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="6090:6111" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="6117:6363" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="6394:6420" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="6426:7155" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="7210:7390" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="7396:7635" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="7672:7699" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="7705:8827" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="8867:8999" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="9006:9383" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="9426:9478" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="9484:10807" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="10853:10985" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="10992:11438" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="11481:11533" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="11539:12811" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="12859:13060" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="13066:13358" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="13397:13963" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="13969:14185" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="14212:14292" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="14298:15392" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="15422:16336" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="16342:17992" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="18029:19575" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="19581:22721" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="22874:23717" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="23723:23984" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="24015:24078" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="24084:24380" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="24412:24476" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="24482:24749" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="24783:24843" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="25148:25583" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="25722:25760" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="25902:26052" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="26058:26137" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="26214:26368" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="26455:26484" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="26535:26621" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="26761:27091" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="27097:27789" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="27826:28427" placeholder="{...}" />
-            <marker date="1213053940000" expanded="true" signature="28433:29283" placeholder="/**...*/" />
-            <marker date="1213053940000" expanded="true" signature="29336:29952" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/ref/Reference.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="22" selection-start="589" selection-end="589" vertical-scroll-proportion="0.0">
-          <folding>
-            <marker date="1213053938000" expanded="false" signature="0:173" placeholder="/.../" />
-            <marker date="1213053938000" expanded="true" signature="226:565" placeholder="/**...*/" />
-            <marker date="1213053938000" expanded="true" signature="3962:4545" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="4011:4036" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="4057:4539" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="4558:4969" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="5024:5375" placeholder="/**...*/" />
-            <marker date="1213053938000" expanded="true" signature="5395:5425" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="5431:5714" placeholder="/**...*/" />
-            <marker date="1213053938000" expanded="true" signature="5739:5769" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="5810:6202" placeholder="/**...*/" />
-            <marker date="1213053938000" expanded="true" signature="6235:6465" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="6471:6956" placeholder="/**...*/" />
-            <marker date="1213053938000" expanded="true" signature="6986:7027" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="7086:7116" placeholder="{...}" />
-            <marker date="1213053938000" expanded="true" signature="7177:7272" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/beans/BeanDescriptor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="88" selection-start="506" selection-end="506" vertical-scroll-proportion="0.0">
-          <folding>
-            <marker date="1213053930000" expanded="false" signature="0:178" placeholder="/.../" />
-            <marker date="1213053930000" expanded="true" signature="234:506" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="648:874" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="921:952" placeholder="{...}" />
-            <marker date="1213053930000" expanded="true" signature="958:1338" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="1411:1657" placeholder="{...}" />
-            <marker date="1213053930000" expanded="true" signature="1663:1764" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="1800:1847" placeholder="{...}" />
-            <marker date="1213053930000" expanded="true" signature="1853:2050" placeholder="/**...*/" />
-            <marker date="1213053930000" expanded="true" signature="2092:2145" placeholder="{...}" />
-            <marker date="1213053930000" expanded="true" signature="2316:2416" placeholder="{...}" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/SortedSet.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="120" column="60" selection-start="5995" selection-end="5995" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/RandomAccess.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="48" column="17" selection-start="1937" selection-end="1937" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/Class.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="473" column="26" selection-start="19800" selection-end="19800" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/Void.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="6" selection-start="428" selection-end="428" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/ArrayList.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="129" column="11" selection-start="5539" selection-end="5539" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/Collection.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="167" column="0" selection-start="7773" selection-end="7773" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/lang/Iterable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="62" selection-start="445" selection-end="445" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/Arrays.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="3341" column="30" selection-start="135945" selection-end="135945" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/List.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="277" column="12" selection-start="12716" selection-end="12716" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/regex/Matcher.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="204" column="60" selection-start="7332" selection-end="7332" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.6.0_07/src.zip!/java/util/regex/Pattern.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="54" selection-start="1884" selection-end="1884" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Class.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="631" column="35" selection-start="26238" selection-end="26238" vertical-scroll-proportion="-11.611111">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/concurrent/ConcurrentHashMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="845" column="0" selection-start="31632" selection-end="31632" vertical-scroll-proportion="-7.0555553">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/jre/lib/rt.jar!/sun/reflect/NativeMethodAccessorImpl.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/awt/Color.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="13" selection-start="1585" selection-end="1585" vertical-scroll-proportion="118.888885">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/DemoSmartCompare.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="13" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="10" column="13" selection-start="165" selection-end="165" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestCategoryExample.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="41.68">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/util/regex/Matcher.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="83" column="36" selection-start="3743" selection-end="3743" vertical-scroll-proportion="-0.9444444">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../../../../Program Files/Java/jdk1.5.0_14/src.zip!/java/lang/Appendable.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="39" column="78" selection-start="1397" selection-end="1397" vertical-scroll-proportion="-14.111111">
-          <folding />
-        </state>
+        <state line="8" column="13" selection-start="144" selection-end="144" vertical-scroll-proportion="41.68" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/TestSmartCompare.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="16" selection-start="315" selection-end="315" vertical-scroll-proportion="0.0">
+        <state line="16" column="16" selection-start="315" selection-end="315" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigManagerException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="13" selection-start="127" selection-end="127" vertical-scroll-proportion="-5.6666665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/RegexMigrationStrategy.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="59" selection-start="588" selection-end="588" vertical-scroll-proportion="-9.916667">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigMigrationStategy.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="0" selection-start="110" selection-end="110" vertical-scroll-proportion="-5.6666665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/XPathMigrationStrategy.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="13" selection-start="813" selection-end="813" vertical-scroll-proportion="-6.375">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/LogMethods.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="17" selection-start="131" selection-end="131" vertical-scroll-proportion="-5.6666665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/Migration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="19" selection-start="129" selection-end="129" vertical-scroll-proportion="-5.6666665">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/Migrations.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="35" selection-start="301" selection-end="301" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigData.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="13" selection-start="127" selection-end="127" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSink.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="3" selection-start="138" selection-end="223" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="50" selection-start="2729" selection-end="2729" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/util/Vector.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="843" column="32" selection-start="30892" selection-end="30892" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/util/Stack.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="56" column="26" selection-start="1712" selection-end="1712" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSource.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="0" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/FileSourceAndSink.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="81" column="51" selection-start="3485" selection-end="3485" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/MigrationSource.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="17" selection-start="183" selection-end="183" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/NullMigrationStrategy.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="13" selection-start="41" selection-end="41" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/UrlMigrationLoader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="18" selection-start="1412" selection-end="1412" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/SmartCompare.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="825" column="38" selection-start="33690" selection-end="33690" vertical-scroll-proportion="0.66930693">
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state line="30" column="57" selection-start="1540" selection-end="1540" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/XsltMigrationStrategy.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="61" selection-start="1750" selection-end="1750" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files (x86)/Java/jdk1.5.0_17/src.zip!/java/io/ByteArrayOutputStream.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="172" column="18" selection-start="5370" selection-end="5370" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/BeanPersistenceSerializer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="61" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/config/ConfigSerializer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="0" selection-start="273" selection-end="273" vertical-scroll-proportion="0.2319688">
+          <folding />
         </state>
       </provider>
     </entry>
