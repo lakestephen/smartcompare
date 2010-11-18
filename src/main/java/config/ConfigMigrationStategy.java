@@ -7,5 +7,7 @@ package config;
 * Time: 14:38:26
 */
 public interface ConfigMigrationStategy {
+
     public String migrate(String configKey, String source);
+
 }

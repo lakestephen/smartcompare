@@ -7,8 +7,10 @@ import java.util.ArrayList;
 * User: Nick Ebbutt
 * Date: 29-Apr-2010
 * Time: 14:38:13
+*
+* A bean to contain a list of migrations, for serialization
 */
-public final class Migrations {
+public class Migrations {
 
     private ArrayList<Migration> migrations = new ArrayList<Migration>();
 

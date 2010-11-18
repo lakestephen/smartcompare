@@ -7,6 +7,8 @@ import java.util.List;
 * User: Nick Ebbutt
 * Date: 29-Apr-2010
 * Time: 14:35:19
+* 
+* Interface to implement for classes which are responsible for loading configurations
 */
 public interface ConfigSource {
 
