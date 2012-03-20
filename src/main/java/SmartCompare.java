@@ -354,8 +354,14 @@ public class SmartCompare {
             if ( c != null ) {
                 boolean isEqual = c.isEqual(f, fieldValue1, fieldValue2);
                 fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, isEqual);
-            } else if ( fieldValue1 instanceof Comparable ) {
-                int comparison = ((Comparable)fieldValue1).compareTo(fieldValue2);
+            } else if ( fieldValue1 instanceof Comparable && fieldValue2 instanceof Comparable) {
+                int comparison = -1;
+                try {
+                    comparison = ((Comparable)fieldValue1).compareTo(fieldValue2);
+                } catch (Exception e) {
+                    //this is allowable, where fieldValues are both Comparable but of different class types which are no
+                    //compatible for comparison
+                }
                 fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, comparison == 0);
             } else {
                 fieldDifference = createComparisonDifference(f.getName(), fieldValue1, fieldValue2, fieldValue1.equals(fieldValue2));
