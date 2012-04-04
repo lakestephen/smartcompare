@@ -112,6 +112,15 @@ public class TestSmartCompare extends TestCase {
         );
     }
 
+    //check that Double.NaN is equal to Double.NaN for our comparison,
+    //which should be the case because compareTo() returns zero
+    public void testDoubleNanComparison() {
+        t1 = new TestFieldDifferenceBean(Double.NaN, null);
+        t2 = new TestFieldDifferenceBean(Double.NaN, null);
+        differences = new SmartCompare().getDifferences(t1,t2);
+        checkDifferences();
+    }
+
     public void testClassDifferencesAsPrimaryInputs() {
         t1 = "wibble";
         t2 =  new TestFieldDifferenceBean(10d, "test");
